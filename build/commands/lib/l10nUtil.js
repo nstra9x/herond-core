@@ -53,10 +53,10 @@ const chromiumGeneratedResourcesExcludes = new Set(["chromeos_strings.grdp"])
 // brave_generated_resources.grd maps to brave/app/resources/brave_generated_resources*.xtb,
 // brave_components_strings.grd maps to brave/components/resources/strings/brave_components_resources*.xtb
 // messages.json localization is handled inside of brave-extension.
-const braveSpecificGeneratedResourcesPath = path.resolve(path.join(srcDir, 'brave', 'app', 'brave_generated_resources.grd'))
-const braveResourcesComponentsStringsPath = path.resolve(path.join(srcDir, 'brave', 'components', 'resources', 'brave_components_strings.grd'))
-const braveExtensionMessagesPath = path.resolve(path.join(srcDir, 'brave', 'components', 'brave_extension', 'extension', 'brave_extension', '_locales', 'en_US', 'messages.json'))
-const braveAndroidBraveStringsPath = path.resolve(path.join(srcDir, 'brave', 'browser', 'ui', 'android', 'strings', 'android_brave_strings.grd'))
+const herondSpecificGeneratedResourcesPath = path.resolve(path.join(srcDir, 'brave', 'app', 'brave_generated_resources.grd'))
+const herondResourcesComponentsStringsPath = path.resolve(path.join(srcDir, 'brave', 'components', 'resources', 'brave_components_strings.grd'))
+const herondExtensionMessagesPath = path.resolve(path.join(srcDir, 'brave', 'components', 'brave_extension', 'extension', 'brave_extension', '_locales', 'en_US', 'messages.json'))
+const herondAndroidBraveStringsPath = path.resolve(path.join(srcDir, 'brave', 'browser', 'ui', 'android', 'strings', 'android_brave_strings.grd'))
 
 // Helper function to find all grdp parts in a grd.
 function getGrdPartsFromGrd(path) {
@@ -180,10 +180,10 @@ const l10nUtil = {
   getBraveNonGeneratedPaths: () => {
     if (typeof(l10nUtil.getBraveNonGeneratedPaths.paths) === 'undefined') {
       l10nUtil.getBraveNonGeneratedPaths.paths = [
-        braveSpecificGeneratedResourcesPath,
-        braveResourcesComponentsStringsPath,
-        braveExtensionMessagesPath,
-        braveAndroidBraveStringsPath
+        herondSpecificGeneratedResourcesPath,
+        herondResourcesComponentsStringsPath,
+        herondExtensionMessagesPath,
+        herondAndroidBraveStringsPath
       ]
     }
     return l10nUtil.getBraveNonGeneratedPaths.paths
