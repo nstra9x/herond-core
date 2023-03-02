@@ -30,7 +30,7 @@ function maybeInstallDepotTools(options = config.defaultOptions) {
 
   if (!fs.existsSync(config.depotToolsDir)) {
     Log.progress('Install Depot Tools...')
-    fs.mkdirSync(config.depotToolsDir)
+    fs.mkdirSync(config.depotToolsDir, { recursive: true })
     util.run(
         'git',
         [
@@ -69,16 +69,16 @@ function buildDefaultGClientConfig() {
   let out = toGClientConfigItem('solutions', [
     {
       managed: '%False%',
-      name: 'chromium',
+      name: 'src',
       url: config.chromiumRepo,
       custom_deps: {
-        'chromium/third_party/WebKit/LayoutTests': '%None%',
-        'chromium/chrome_frame/tools/test/reference_build/chrome': '%None%',
-        'chromium/chrome_frame/tools/test/reference_build/chrome_win': '%None%',
-        'chromium/chrome/tools/test/reference_build/chrome': '%None%',
-        'chromium/chrome/tools/test/reference_build/chrome_linux': '%None%',
-        'chromium/chrome/tools/test/reference_build/chrome_mac': '%None%',
-        'chromium/chrome/tools/test/reference_build/chrome_win': '%None%'
+        'src/third_party/WebKit/LayoutTests': '%None%',
+        'src/chrome_frame/tools/test/reference_build/chrome': '%None%',
+        'src/chrome_frame/tools/test/reference_build/chrome_win': '%None%',
+        'src/chrome/tools/test/reference_build/chrome': '%None%',
+        'src/chrome/tools/test/reference_build/chrome_linux': '%None%',
+        'src/chrome/tools/test/reference_build/chrome_mac': '%None%',
+        'src/chrome/tools/test/reference_build/chrome_win': '%None%'
       },
       custom_vars: {
         'checkout_pgo_profiles': config.isHerondReleaseBuild() ? '%True%' :
