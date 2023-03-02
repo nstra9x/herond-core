@@ -183,7 +183,7 @@ const Config = function () {
   this.herondAndroidKeystorePassword = getNPMConfig(['herond_android_keystore_password'])
   this.herondAndroidKeyPassword = getNPMConfig(['herond_android_key_password'])
   this.herondVariationsServerUrl = getNPMConfig(['herond_variations_server_url']) || ''
-  this.nativeRedirectCCDir = path.join(this.srcDir, 'out', 'redirect_cc')
+  this.nativeRedirectCCDir = path.join(this.rootDir, 'out', 'redirect_cc')
   this.use_goma = getNPMConfig(['herond_use_goma']) || false
   this.goma_offline = false
   this.use_libfuzzer = false
@@ -1021,7 +1021,7 @@ Object.defineProperty(Config.prototype, 'defaultOptions', {
 
 Object.defineProperty(Config.prototype, 'outputDir', {
   get: function () {
-    const baseDir = path.join(this.srcDir, 'out')
+    const baseDir = path.join(this.rootDir, 'out')
     if (this.__outputDir) {
       if (path.isAbsolute(this.__outputDir)) {
         return this.__outputDir;
