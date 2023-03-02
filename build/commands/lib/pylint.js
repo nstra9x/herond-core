@@ -1,4 +1,4 @@
-// Copyright (c) 2021 The Brave Authors. All rights reserved.
+// Copyright (c) 2021 The Herond Authors. All rights reserved.
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // you can obtain one at https://mozilla.org/MPL/2.0/.
@@ -23,7 +23,7 @@ const deleteFile = (path) => {
 
 const getDefaultOptions = () => {
   let options = Object.assign({}, config.defaultOptions)
-  // options.env.PYLINTRC = path.join(config.braveCoreDir, '.pylintrc')
+  // options.env.PYLINTRC = path.join(config.herondCoreDir, '.pylintrc')
   options.cwd = config.herondCoreDir
   return options
 }

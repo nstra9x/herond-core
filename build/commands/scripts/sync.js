@@ -69,16 +69,16 @@ function buildDefaultGClientConfig() {
   let out = toGClientConfigItem('solutions', [
     {
       managed: '%False%',
-      name: 'src/chromium',
+      name: 'chromium',
       url: config.chromiumRepo,
       custom_deps: {
-        'src/chromium/third_party/WebKit/LayoutTests': '%None%',
-        'src/chromium/chrome_frame/tools/test/reference_build/chrome': '%None%',
-        'src/chromium/chrome_frame/tools/test/reference_build/chrome_win': '%None%',
-        'src/chromium/chrome/tools/test/reference_build/chrome': '%None%',
-        'src/chromium/chrome/tools/test/reference_build/chrome_linux': '%None%',
-        'src/chromium/chrome/tools/test/reference_build/chrome_mac': '%None%',
-        'src/chromium/chrome/tools/test/reference_build/chrome_win': '%None%'
+        'chromium/third_party/WebKit/LayoutTests': '%None%',
+        'chromium/chrome_frame/tools/test/reference_build/chrome': '%None%',
+        'chromium/chrome_frame/tools/test/reference_build/chrome_win': '%None%',
+        'chromium/chrome/tools/test/reference_build/chrome': '%None%',
+        'chromium/chrome/tools/test/reference_build/chrome_linux': '%None%',
+        'chromium/chrome/tools/test/reference_build/chrome_mac': '%None%',
+        'chromium/chrome/tools/test/reference_build/chrome_win': '%None%'
       },
       custom_vars: {
         'checkout_pgo_profiles': config.isHerondReleaseBuild() ? '%True%' :
@@ -87,7 +87,7 @@ function buildDefaultGClientConfig() {
     },
     {
       managed: '%False%',
-      name: 'src/herond',
+      name: 'herond',
       // We do not use gclient to manage herond-core, so this should not
       // actually get used.
       url: 'https://github.com/nstra9x/herond-core'
@@ -250,7 +250,7 @@ async function RunCommand() {
   }
   Log.progress('...gclient sync done.')
 
-  await util.applyPatches()
+  // await util.applyPatches()
 
   if (!program.nohooks) {
     Log.progress('Running gclient runhooks...')

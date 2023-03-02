@@ -26,7 +26,7 @@ const pushL10n = (options) => {
     util.run('git', args, runOptions)
     args = ['checkout', '--', '*.grd*']
     util.run('git', args, runOptions)
-    l10nUtil.getBraveTopLevelPaths().forEach((sourceStringPath) => {
+    l10nUtil.getHerondTopLevelPaths().forEach((sourceStringPath) => {
       if (!options.grd_path || sourceStringPath.endsWith(path.sep + options.grd_path))
         util.run('python3', ['script/push-l10n.py', '--source_string_path', sourceStringPath, extraScriptOptions], cmdOptions)
     })

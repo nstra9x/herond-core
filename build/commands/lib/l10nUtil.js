@@ -7,7 +7,7 @@
  * This file manages the following:
  * - Lists of files needed to be translated (Which is all top level GRD and JSON files)
  * - All mappings for auto-generated Herond files from the associated Chromium files.
- * - Top level global string replacements, such as replacing Chromium with Brave
+ * - Top level global string replacements, such as replacing Chromium with Herond
  */
 
 const path = require('path')
@@ -23,29 +23,29 @@ const srcDir = config.srcDir
 // chromium_strings.grd and any of its parts files that we track localization for in transifex
 // These map to herond/app/resources/chromium_strings*.xtb
 const chromiumStringsPath = path.resolve(path.join(srcDir, 'chrome', 'app', 'chromium_strings.grd'))
-const braveStringsPath = path.resolve(path.join(srcDir, 'brave', 'app', 'brave_strings.grd'))
+const herondStringsPath = path.resolve(path.join(srcDir, 'brave', 'app', 'brave_strings.grd'))
 const chromiumSettingsPartPath = path.resolve(path.join(srcDir, 'chrome', 'app', 'settings_chromium_strings.grdp'))
-const braveSettingsPartPath = path.resolve(path.join(srcDir, 'brave', 'app', 'settings_brave_strings.grdp'))
+const herondSettingsPartPath = path.resolve(path.join(srcDir, 'brave', 'app', 'settings_brave_strings.grdp'))
 
 //Replace android strings.
 const androidChromeStringsPath = path.resolve(path.join(srcDir, 'chrome', 'browser', 'ui', 'android', 'strings', 'android_chrome_strings.grd'))
-const braveAndroidChromeStringsPath = path.resolve(path.join(srcDir, 'brave', 'browser', 'ui', 'android', 'strings', 'android_chrome_strings.grd'))
+const herondAndroidChromeStringsPath = path.resolve(path.join(srcDir, 'brave', 'browser', 'ui', 'android', 'strings', 'android_chrome_strings.grd'))
 
 // component_chromium_strings.grd and any of its parts files that we track localization for in transifex
 // These map to brave/app/strings/components_chromium_strings*.xtb
 const chromiumComponentsChromiumStringsPath = path.resolve(path.join(srcDir, 'components', 'components_chromium_strings.grd'))
-const braveComponentsBraveStringsPath = path.resolve(path.join(srcDir, 'brave', 'components', 'components_brave_strings.grd'))
+const braveComponentsHerondStringsPath = path.resolve(path.join(srcDir, 'brave', 'components', 'components_brave_strings.grd'))
 
 // components/component_strings.grd and any of its parts files that we track localization for in transifex
 // These map to brave/components/component_strings*.xtb
 const chromiumComponentsStringsPath = path.resolve(path.join(srcDir, 'components', 'components_strings.grd'))
-const braveComponentsStringsPath = path.resolve(path.join(srcDir, 'brave', 'components', 'components_strings.grd'))
+const herondComponentsStringsPath = path.resolve(path.join(srcDir, 'brave', 'components', 'components_strings.grd'))
 
 // generated_resources.grd and any of its parts files that we track localization for in transifex
 // There is also chromeos_strings.grdp, but we don't need to track it here because it is explicitly skipped in transifex.py
 // These map to brave/app/resources/generated_resoruces*.xtb
 const chromiumGeneratedResourcesPath = path.resolve(path.join(srcDir, 'chrome', 'app', 'generated_resources.grd'))
-const braveGeneratedResourcesPath = path.resolve(path.join(srcDir, 'brave', 'app', 'generated_resources.grd'))
+const herondGeneratedResourcesPath = path.resolve(path.join(srcDir, 'brave', 'app', 'generated_resources.grd'))
 const chromiumGeneratedResourcesExcludes = new Set(["chromeos_strings.grdp"])
 
 // The following are not generated files but still need to be tracked so they get sent to transifex
@@ -56,7 +56,7 @@ const chromiumGeneratedResourcesExcludes = new Set(["chromeos_strings.grdp"])
 const herondSpecificGeneratedResourcesPath = path.resolve(path.join(srcDir, 'brave', 'app', 'brave_generated_resources.grd'))
 const herondResourcesComponentsStringsPath = path.resolve(path.join(srcDir, 'brave', 'components', 'resources', 'brave_components_strings.grd'))
 const herondExtensionMessagesPath = path.resolve(path.join(srcDir, 'brave', 'components', 'brave_extension', 'extension', 'brave_extension', '_locales', 'en_US', 'messages.json'))
-const herondAndroidBraveStringsPath = path.resolve(path.join(srcDir, 'brave', 'browser', 'ui', 'android', 'strings', 'android_brave_strings.grd'))
+const herondAndroidHerondStringsPath = path.resolve(path.join(srcDir, 'brave', 'browser', 'ui', 'android', 'strings', 'android_brave_strings.grd'))
 
 // Helper function to find all grdp parts in a grd.
 function getGrdPartsFromGrd(path) {
@@ -70,7 +70,7 @@ function getGrdPartsFromGrd(path) {
 }
 
 // Helper function to create a mapping for grd and all of its grdp parts.
-function addGrd(chromiumPath, bravePath, exclude = new Set()) {
+function addGrd(chromiumPath, herondPath, exclude = new Set()) {
   if (verboseLogFindGrd)
     console.log("Adding mappings for GRD: " + chromiumPath)
   if (!fs.existsSync(chromiumPath)) {
@@ -84,36 +84,36 @@ function addGrd(chromiumPath, bravePath, exclude = new Set()) {
   const grdps = getGrdPartsFromGrd(chromiumPath)
   if (grdps.length) {
     const chromiumDir = path.dirname(chromiumPath)
-    const braveDir = path.dirname(bravePath)
+    const herondDir = path.dirname(herondPath)
     for (const grdp of grdps) {
       if (exclude.has(grdp)) {
         continue
       }
       const chromiumGrdpPath = path.resolve(path.join(chromiumDir, grdp))
-      const braveGrdpPath = path.resolve(path.join(braveDir, grdp))
+      const herondGrdpPath = path.resolve(path.join(herondDir, grdp))
       // grdp files can have their own grdp parts too
-      mapping = { ...mapping, ...addGrd(chromiumGrdpPath, braveGrdpPath, exclude) }
+      mapping = { ...mapping, ...addGrd(chromiumGrdpPath, herondGrdpPath, exclude) }
     }
     if (verboseLogFindGrd)
       console.log("  - Added " + (Object.keys(mapping).length - 1) + " GRDP.")
   }
-  mapping[chromiumPath] = bravePath
+  mapping[chromiumPath] = herondPath
   return mapping
 }
 
-// Helper functions that's, for a given pair of chromium to brave GRD mapping
+// Helper functions that's, for a given pair of chromium to herond GRD mapping
 // from the supplied map, determines which GRDP parts are no longer present in
 // the chromium GRD file.
 function getRemovedGRDParts(mapping) {
   let removedMap = new Map()
   for (const [sourcePath, destPath] of Object.entries(mapping)) {
     if (path.extname(destPath) === ".grd") {
-      const braveGRDPs = getGrdPartsFromGrd(destPath)
+      const herondGRDPs = getGrdPartsFromGrd(destPath)
       const chromiumGRDPs = getGrdPartsFromGrd(sourcePath)
       let removed = new Set()
-      for (let i = 0; i < braveGRDPs.length; i++) {
-        if (!chromiumGRDPs.includes(braveGRDPs[i])) {
-          removed.add(braveGRDPs[i])
+      for (let i = 0; i < herondGRDPs.length; i++) {
+        if (!chromiumGRDPs.includes(herondGRDPs[i])) {
+          removed.add(herondGRDPs[i])
         }
       }
       if (removed.size) {
@@ -128,12 +128,12 @@ function getRemovedGRDParts(mapping) {
 function getAutoGeneratedGrdMappings() {
   if (typeof(getAutoGeneratedGrdMappings.mappings) === 'undefined') {
     console.log(chalk.italic('Recursing through GRD to find GRDP files...'))
-    // Brave specific only grd and grdp files should NOT be added.
+    // Herond specific only grd and grdp files should NOT be added.
     // Using AddGrd will add GRD and all of its GRDPs.
     getAutoGeneratedGrdMappings.mappings = {
-      ...addGrd(chromiumComponentsStringsPath, braveComponentsStringsPath),
-      ...addGrd(chromiumGeneratedResourcesPath, braveGeneratedResourcesPath, chromiumGeneratedResourcesExcludes),
-      ...addGrd(androidChromeStringsPath, braveAndroidChromeStringsPath)
+      ...addGrd(chromiumComponentsStringsPath, herondComponentsStringsPath),
+      ...addGrd(chromiumGeneratedResourcesPath, herondGeneratedResourcesPath, chromiumGeneratedResourcesExcludes),
+      ...addGrd(androidChromeStringsPath, herondAndroidChromeStringsPath)
     }
     console.log(chalk.italic('Done recursing through GRD to find GRDP files.'))
   }
@@ -148,27 +148,27 @@ function getChromiumToAutoGeneratedHerondMapping() {
     // Group them with a leading and trailing newline to keep this file organized.
     // The first 3 are added explicitly because we change the file names.
     getChromiumToAutoGeneratedHerondMapping.mapping = {
-      [chromiumSettingsPartPath]: braveSettingsPartPath,
-      [chromiumStringsPath]: braveStringsPath,
+      [chromiumSettingsPartPath]: herondSettingsPartPath,
+      [chromiumStringsPath]: herondStringsPath,
 
-      [chromiumComponentsChromiumStringsPath]: braveComponentsBraveStringsPath,
+      [chromiumComponentsChromiumStringsPath]: braveComponentsHerondStringsPath,
 
       ...getAutoGeneratedGrdMappings()
     }
   }
-  return getChromiumToAutoGeneratedBraveMapping.mapping
+  return getChromiumToAutoGeneratedHerondMapping.mapping
 }
 
 const l10nUtil = {
-  // Same as with chromiumToAutoGeneratedBraveMapping but maps in the opposite direction
-  getAutoGeneratedBraveToChromiumMapping: () => {
-    if (typeof(l10nUtil.getAutoGeneratedBraveToChromiumMapping.mapping) === 'undefined') {
-      const chromiumToAutoGeneratedBraveMapping = getChromiumToAutoGeneratedBraveMapping()
-      l10nUtil.getAutoGeneratedBraveToChromiumMapping.mapping = Object.keys(
-        chromiumToAutoGeneratedBraveMapping).reduce((obj, key) => (
-          { ...obj, [chromiumToAutoGeneratedBraveMapping[key]]: key }), {})
+  // Same as with chromiumToAutoGeneratedHerondMapping but maps in the opposite direction
+  getAutoGeneratedHerondToChromiumMapping: () => {
+    if (typeof(l10nUtil.getAutoGeneratedHerondToChromiumMapping.mapping) === 'undefined') {
+      const chromiumToAutoGeneratedHerondMapping = getChromiumToAutoGeneratedHerondMapping()
+      l10nUtil.getAutoGeneratedHerondToChromiumMapping.mapping = Object.keys(
+        chromiumToAutoGeneratedHerondMapping).reduce((obj, key) => (
+          { ...obj, [chromiumToAutoGeneratedHerondMapping[key]]: key }), {})
     }
-    return l10nUtil.getAutoGeneratedBraveToChromiumMapping.mapping
+    return l10nUtil.getAutoGeneratedHerondToChromiumMapping.mapping
   },
 
   // All paths which are generated
@@ -177,34 +177,34 @@ const l10nUtil = {
   },
 
   // All paths which are not generated
-  getBraveNonGeneratedPaths: () => {
-    if (typeof(l10nUtil.getBraveNonGeneratedPaths.paths) === 'undefined') {
-      l10nUtil.getBraveNonGeneratedPaths.paths = [
+  getHerondNonGeneratedPaths: () => {
+    if (typeof(l10nUtil.getHerondNonGeneratedPaths.paths) === 'undefined') {
+      l10nUtil.getHerondNonGeneratedPaths.paths = [
         herondSpecificGeneratedResourcesPath,
         herondResourcesComponentsStringsPath,
         herondExtensionMessagesPath,
-        herondAndroidBraveStringsPath
+        herondAndroidHerondStringsPath
       ]
     }
-    return l10nUtil.getBraveNonGeneratedPaths.paths
+    return l10nUtil.getHerondNonGeneratedPaths.paths
   },
 
-  // Brave specific strings and Chromium mapped Brave strings will be here.
-  // But you only need to add the Brave specific strings manually here.
-  getAllBravePaths: () => {
-    return l10nUtil.getBraveNonGeneratedPaths().concat(l10nUtil.getBraveAutoGeneratedPaths())
+  // Herond specific strings and Chromium mapped Herond strings will be here.
+  // But you only need to add the Herond specific strings manually here.
+  getAllHerondPaths: () => {
+    return l10nUtil.getHerondNonGeneratedPaths().concat(l10nUtil.getHerondAutoGeneratedPaths())
   },
 
   // Get all GRD and JSON paths whether they are generatd or not
   // Push and pull scripts for l10n use this.
   // Transifex manages files per grd and not per grd or grdp.
   // This is because only 1 xtb is created per grd per locale even if it has multiple grdp files.
-  getBraveTopLevelPaths: () => {
-    return l10nUtil.getAllBravePaths().filter((x) => ['grd', 'json'].includes(x.split('.').pop()))
+  getHerondTopLevelPaths: () => {
+    return l10nUtil.getAllHerondPaths().filter((x) => ['grd', 'json'].includes(x.split('.').pop()))
   },
 
 // Helper function to retrieve Greaselion script paths relative to the
-// Brave paths.
+// Herond paths.
 //
 // Greaselion.json consists of an array of Greaselion rules,
 // specifying scripts to inject into given sites based on certain
@@ -255,7 +255,7 @@ const l10nUtil = {
   },
 
   // This simply reads Chromium files that are passed to it and replaces branding strings
-  // with Brave specific branding strings.
+  // with Herond specific branding strings.
   // Do not use this for filtering XML, instead use chromium-rebase-l10n.py.
   // Only add idempotent replacements here (i.e. don't append replace A with AX here)
   rebaseHerondStringFilesOnChromiumL10nFiles: async (path) => {

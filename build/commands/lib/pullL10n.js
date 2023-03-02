@@ -26,7 +26,7 @@ const pullL10n = (options) => {
     util.run('git', ['checkout', '--', targetFile], { cwd: srcDir })
   })
 
-  l10nUtil.getBraveTopLevelPaths().forEach((sourceStringPath) => {
+  l10nUtil.getHerondTopLevelPaths().forEach((sourceStringPath) => {
     if (!options.grd_path || sourceStringPath.endsWith(path.sep + options.grd_path)) {
       let cmd_args = ['script/pull-l10n.py', '--source_string_path', sourceStringPath]
       if (options.debug)
