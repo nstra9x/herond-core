@@ -22,8 +22,8 @@ let dirName = __dirname
 if (process.platform === 'win32') {
   dirName = fs.realpathSync.native(dirName)
 }
-const rootDir = path.resolve(dirName, '..', '..', '..', '..')
-const herondCoreDir = path.join(rootDir, 'herond')
+const rootDir = path.resolve(dirName, '..', '..', '..', '..', '..')
+const herondCoreDir = path.join(rootDir, 'src', 'herond')
 
 const run = (cmd, args = []) => {
   const prog = spawnSync(cmd, args)
@@ -107,7 +107,7 @@ const Config = function () {
   this.herondCoreDir = herondCoreDir
   this.buildToolsDir = path.join(this.srcDir, 'build')
   this.resourcesDir = path.join(this.rootDir, 'resources')
-  this.depotToolsDir = path.join(this.rootDir, 'src', 'depot_tools')
+  this.depotToolsDir = path.join(this.herondCoreDir, 'vendor', 'depot_tools')
   this.defaultGClientFile = path.join(this.rootDir, '.gclient')
   this.gClientFile = process.env.HEROND_GCLIENT_FILE || this.defaultGClientFile
   this.gClientVerbose = getNPMConfig(['gclient_verbose']) || false

@@ -87,7 +87,7 @@ function buildDefaultGClientConfig() {
     },
     {
       managed: '%False%',
-      name: 'herond',
+      name: 'src/herond',
       // We do not use gclient to manage herond-core, so this should not
       // actually get used.
       url: 'https://github.com/nstra9x/herond-core'

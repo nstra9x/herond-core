@@ -53,16 +53,7 @@
   "author": {
     "name": "Herond Software <support@herond.com>"
   },
-  "contributors": [
-    {
-      "name": "Cezar Augusto",
-      "email": "cezar@brave.com"
-    },
-    {
-      "name": "Matt Bacchi",
-      "email": "mbacchi@gmail.com"
-    }
-  ],
+  "contributors": [],
   "license": "MPL-2.0",
   "bugs": {
     "url": "https://github.com/brave/brave-browser/issues"
