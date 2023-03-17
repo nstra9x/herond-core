@@ -113,6 +113,7 @@ const Config = function () {
   this.gClientVerbose = getNPMConfig(['gclient_verbose']) || false
   this.targetArch = getNPMConfig(['target_arch']) || process.arch
   this.targetOS = getNPMConfig(['target_os'])
+  this.targetOsOnly = getNPMConfig(['target_os_only'])
   this.targetEnvironment = getNPMConfig(['target_environment'])
   this.gypTargetArch = 'x64'
   this.targetAndroidBase = 'classic'

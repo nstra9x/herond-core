@@ -63,9 +63,9 @@
     "projects": {
       "chrome": {
         "dir": "src",
-        "tag": "111.0.5563.41",
+        "branch": "main",
         "repository": {
-          "url": "https://github.com/chromium/chromium"
+          "url": "https://chromium.googlesource.com/chromium/src.git"
         }
       }
     }
