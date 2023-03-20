@@ -5,12 +5,6 @@ const fs = require('fs-extra')
 const { log } = require('console')
 
 console.log('Building project...')
-util.run('which', ['autoninja'], { cwd: config.srcDir })
-let ninjaOpts = [
-    '-C',
-    'out/Debug-iphonesimulator',
-    'gn_all'
-]
 console.log('Building..................')
-util.run('autoninja', ninjaOpts, { cwd: config.srcDir })
+util.run('autoninja', ['-C', 'out/Debug-iphonesimulator','gn_all'], { cwd: config.srcDir })
 console.log('Finish building project')
