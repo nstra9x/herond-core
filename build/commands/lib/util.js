@@ -102,7 +102,8 @@ const util = {
 
   run: (cmd, args = [], options = {}) => {
     const { continueOnFail, ...cmdOptions } = options
-    const prog = util.runProcess(cmd, args, cmdOptions)
+      const prog = util.runProcess(cmd, args, cmdOptions)
+      console.log({prog})
     if (prog.status !== 0) {
       if (!continueOnFail) {
         console.log(prog.stdout && prog.stdout.toString())
