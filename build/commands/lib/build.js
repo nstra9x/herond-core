@@ -20,7 +20,7 @@ const checkVersionsMatch = () => {
 }
 
 const build = (buildConfig = config.defaultBuildConfig, options = {}) => {
-    log.console('Building project...')
+    console.log('Building project...')
     let ninjaOpts = [
         '-C',
         'out/Debug-iphonesimulator',
@@ -28,9 +28,9 @@ const build = (buildConfig = config.defaultBuildConfig, options = {}) => {
     ]
     let myOption = config.srcDir
     //Log.progress('autoninja' + ninjaOpts + myOption)
-    log.console('Start building project...')
+    console.log('Start building project...')
     //util.run('autoninja', ninjaOpts, myOption)
-    log.console('Finish building project')
+    console.log('Finish building project')
   /*config.buildConfig = buildConfig
   config.update(options)
   checkVersionsMatch()
