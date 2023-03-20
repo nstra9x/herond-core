@@ -214,6 +214,10 @@ function syncHerond(program) {
       path.join(config.herondCoreDir, '.herond_gclient'))
 }
 
+function genXcodeProject() {
+    util.run('ios/build/tools/setup-gn.py', { cwd: config.srcDir })
+}
+
 async function RunCommand() {
   program.parse(process.argv)
   config.update(program)
@@ -253,7 +257,7 @@ async function RunCommand() {
   }
   Log.progress('...gclient sync done.')
 
-  // await util.applyPatches()
+  ///////// await util.applyPatches()
 
   if (!program.nohooks) {
     Log.progress('Running gclient runhooks...')
@@ -263,6 +267,11 @@ async function RunCommand() {
     util.runGClient(['runhooks'])
     Log.progress('...gclient runhooks done.')
   }
+
+  // Generate Xcode project
+    Log.progress('Generating Xcode project...')
+    genXcodeProject()
+    Log.progress('... generate Xcode project done.')
 }
 
 Log.progress('Herond Browser Sync starting')

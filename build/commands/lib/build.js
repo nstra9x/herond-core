@@ -19,12 +19,14 @@ const checkVersionsMatch = () => {
 }
 
 const build = (buildConfig = config.defaultBuildConfig, options = {}) => {
-  config.buildConfig = buildConfig
+    Log.progress('Building project...')
+    util.run('autoninja -C out/Debug-iphonesimulator gn_all', { cwd: config.srcDir })
+  /*config.buildConfig = buildConfig
   config.update(options)
   checkVersionsMatch()
 
-  util.touchOverriddenFiles()
-  util.updateBranding()
+  //util.touchOverriddenFiles()
+  //util.updateBranding()
 
   if (config.xcode_gen_target) {
     util.generateXcodeWorkspace()
@@ -32,7 +34,7 @@ const build = (buildConfig = config.defaultBuildConfig, options = {}) => {
     if (options.no_gn_gen === undefined)
       util.generateNinjaFiles()
     util.buildTarget()
-  }
+  }*/
 }
 
 module.exports = build
