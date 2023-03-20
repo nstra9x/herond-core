@@ -27,9 +27,8 @@ const build = (buildConfig = config.defaultBuildConfig, options = {}) => {
         'gn_all'
     ]
     let myOption = config.srcDir
-    //Log.progress('autoninja' + ninjaOpts + myOption)
     console.log('Start building project...')
-    //util.run('autoninja', ninjaOpts, myOption)
+    util.run('autoninja', ninjaOpts, myOption)
     console.log('Finish building project')
   /*config.buildConfig = buildConfig
   config.update(options)
