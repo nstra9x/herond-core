@@ -26,9 +26,7 @@ const build = (buildConfig = config.defaultBuildConfig, options = {}) => {
         'out/Debug-iphonesimulator',
         'gn_all'
     ]
-    let myOption = config.srcDir
-    console.log('Start building project...')
-    util.run('autoninja', ninjaOpts, myOption)
+    util.run('autoninja', ninjaOpts, { cwd: config.srcDir })
     console.log('Finish building project')
   /*config.buildConfig = buildConfig
   config.update(options)
