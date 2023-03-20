@@ -2,6 +2,7 @@ const config = require('../lib/config')
 const util = require('../lib/util')
 const path = require('path')
 const fs = require('fs-extra')
+const { log } = require('console')
 
 /**
  * Checks to make sure the src/chrome/VERSION matches herond-core's package.json version
@@ -21,9 +22,15 @@ const checkVersionsMatch = () => {
 const build = (buildConfig = config.defaultBuildConfig, options = {}) => {
     Log.progress('Building project...')
     let ninjaOpts = [
-        '-C', 'out/Debug-iphonesimulator', 'gn_all'
+        '-C',
+        'out/Debug-iphonesimulator',
+        'gn_all'
     ]
-    util.run('autoninja', ninjaOpts, { cwd: config.srcDir })
+    let myOption = config.srcDir
+    Log.progress('autoninja' + ninjaOpts + myOption)
+    Log.progress('Start building project...')
+    util.run('autoninja', ninjaOpts, myOption)
+    Log.progress('Finish building project')
   /*config.buildConfig = buildConfig
   config.update(options)
   checkVersionsMatch()
