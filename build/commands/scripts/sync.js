@@ -215,7 +215,7 @@ function syncHerond(program) {
 }
 
 function genXcodeProject() {
-    util.run('ios/build/tools/setup-gn.py', '', { cwd: config.srcDir })
+    util.run('python3', ['ios/build/tools/setup-gn.py'], { cwd: config.srcDir })
 }
 
 async function RunCommand() {
