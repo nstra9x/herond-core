@@ -21,28 +21,28 @@ const buildIOS = (mode = "Release", device = "iphonesimulator", application = "g
   }
 
   switch (device.toLowerCase()) {
-    case "content_shell":
-      device = "content_shell"
+    case "iphone":
+      device = "iphoneos"
       break
-    case "ios_web_shell":
-      device = "ios_web_shell"
+    case "maccatalyst":
+      device = "maccatalyst"
       break
     default:
-      device = "gn_all"
+      device = "iphonesimulator"
   }
 
   switch (application.toLowerCase()) {
-    case "iphone":
-      application = "iphoneos"
+    case "content_shell":
+      application = "content_shell"
       break
-    case "maccatalyst":
-      application = "maccatalyst"
+    case "ios_web_shell":
+      application = "ios_web_shell"
       break
     default:
-      application = "iphonesimulator"
+      application = "gn_all"
   }
 
-  const outDir = path.resolve(path.join('out', mode, '-', device))
+  const outDir = 'out/' + mode + '-' + device
   console.log('outDir == ' + outDir)
 
   console.log("Building project ...")
