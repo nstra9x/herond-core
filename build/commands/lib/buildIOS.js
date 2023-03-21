@@ -3,51 +3,50 @@ const util = require('../lib/util')
 const path = require('path')
 const fs = require('fs-extra')
 
-const buildIOS = (buildConfig = config.defaultBuildConfig, options) => {
-  config.buildConfig = buildConfig
-  config.update(options)
-
-  switch (options.build_mode.toLowerCase()) {
+const buildIOS = (mode = "Release", device = "iphonesimulator", application = "gn_all", options) => {
+  //config.buildConfig = buildConfig
+  //config.update(options)
+  switch (mode.toLowerCase()) {
     case "debug":
-      options.build_mode = "Debug"
+      mode = "Debug"
       break
     case "official":
-      options.build_mode = "Official"
+      mode = "Official"
       break
     case "profile":
-      options.build_mode = "Profile"
+      mode = "Profile"
       break
     default:
-      options.build_mode = "Release"
+      mode = "Release"
   }
 
-  switch (options.build_option.toLowerCase()) {
+  switch (device.toLowerCase()) {
     case "content_shell":
-      options.build_option = "content_shell"
+      device = "content_shell"
       break
     case "ios_web_shell":
-      options.build_option = "ios_web_shell"
+      device = "ios_web_shell"
       break
     default:
-      options.build_option = "gn_all"
+      device = "gn_all"
   }
 
-  switch (options.build_device.toLowerCase()) {
+  switch (application.toLowerCase()) {
     case "iphone":
-      options.build_device = "iphoneos"
+      application = "iphoneos"
       break
     case "maccatalyst":
-      options.build_device = "maccatalyst"
+      application = "maccatalyst"
       break
     default:
-      options.build_device = "iphonesimulator"
+      application = "iphonesimulator"
   }
 
-  const outDir = path.resolve(path.join('out', options.build_mode, '-', options.build_device))
+  const outDir = path.resolve(path.join('out', mode, '-', device))
   console.log('outDir == ' + outDir)
 
   console.log("Building project ...")
-  util.run('autoninja', ['-C', outDir, options.build_option], { stdio: 'inherit', cwd: config.srcDir })
+  util.run('autoninja', ['-C', outDir, application], { stdio: 'inherit', cwd: config.srcDir })
   console.log("... build project done")
 }
 
