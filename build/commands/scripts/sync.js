@@ -268,14 +268,12 @@ async function RunCommand() {
     Log.progress('...gclient runhooks done.')
   }
 
-  // Generate Xcode project
+  // Generate Xcode project if target is iOS
+  if (config.targetOS === "ios") {
     Log.progress('Generating Xcode project...')
     genXcodeProject()
     Log.progress('... generate Xcode project done.')
-
-    console.log('Building project...')
-    util.run('autoninja', ['-C', 'out/Debug-iphonesimulator', 'gn_all'], { cwd: config.srcDir })
-    console.log('Finish building project')
+  }
 }
 
 Log.progress('Herond Browser Sync starting')
