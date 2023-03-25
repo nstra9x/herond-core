@@ -112,11 +112,10 @@ const Config = function () {
   this.gClientFile = process.env.HEROND_GCLIENT_FILE || this.defaultGClientFile
   this.gClientVerbose = getNPMConfig(['gclient_verbose']) || false
   this.targetArch = getNPMConfig(['target_arch']) || process.arch
-  this.targetOS = getNPMConfig(['target_os'])
-  this.targetOsOnly = getNPMConfig(['target_os_only'])
+  this.defaultTargetOS = "ios"
+  this.targetOS = getNPMConfig(['target_os']) ? getNPMConfig(['target_os']) : this.defaultTargetOS
   this.targetEnvironment = getNPMConfig(['target_environment'])
   this.gypTargetArch = 'x64'
-  this.targetAndroidBase = 'classic'
   this.herondGoogleApiKey = getNPMConfig(['herond_google_api_key']) || 'AIzaSyAREPLACEWITHYOUROWNGOOGLEAPIKEY2Q'
   this.googleApiEndpoint = getNPMConfig(['herond_google_api_endpoint']) || 'https://www.googleapis.com/geolocation/v1/geolocate?key='
   this.googleDefaultClientId = getNPMConfig(['google_default_client_id']) || ''
@@ -149,7 +148,6 @@ const Config = function () {
   this.rewardsGrantStagingEndpoint = getNPMConfig(['rewards_grant_staging_endpoint']) || ''
   this.rewardsGrantProdEndpoint = getNPMConfig(['rewards_grant_prod_endpoint']) || ''
   this.herondVersion = packageConfig(['version']) || '0.0.0'
-  this.androidOverrideVersionName = this.herondVersion
   this.releaseTag = this.herondVersion.split('+')[0]
   this.mac_signing_identifier = getNPMConfig(['mac_signing_identifier'])
   this.mac_installer_signing_identifier = getNPMConfig(['mac_installer_signing_identifier']) || ''
@@ -176,13 +174,7 @@ const Config = function () {
   this.extraGnArgs = {}
   this.extraGnGenOpts = getNPMConfig(['herond_extra_gn_gen_opts']) || ''
   this.extraNinjaOpts = []
-  this.herondAndroidSafeBrowsingApiKey = getNPMConfig(['herond_safebrowsing_api_key']) || ''
   this.herondSafetyNetApiKey = getNPMConfig(['herond_safetynet_api_key']) || ''
-  this.herondAndroidDeveloperOptionsCode = getNPMConfig(['herond_android_developer_options_code']) || ''
-  this.herondAndroidKeystorePath = getNPMConfig(['herond_android_keystore_path'])
-  this.herondAndroidKeystoreName = getNPMConfig(['herond_android_keystore_name'])
-  this.herondAndroidKeystorePassword = getNPMConfig(['herond_android_keystore_password'])
-  this.herondAndroidKeyPassword = getNPMConfig(['herond_android_key_password'])
   this.herondVariationsServerUrl = getNPMConfig(['herond_variations_server_url']) || ''
   this.nativeRedirectCCDir = path.join(this.rootDir, 'out', 'redirect_cc')
   this.use_goma = getNPMConfig(['herond_use_goma']) || false
@@ -253,8 +245,6 @@ Config.prototype.buildArgs = function () {
   const version = this.herondVersion
   let version_parts = version.split('+')[0]
   version_parts = version_parts.split('.')
-
-  const chrome_version_parts = this.chromeVersion.split('.')
 
   let args = {
     sardine_client_id: this.sardineClientId,
@@ -357,20 +347,10 @@ Config.prototype.buildArgs = function () {
         args.notary_user = this.notary_user
         args.notary_password = this.notary_password
       }
-    } else if (this.targetOS === 'android') {
-      args.herond_android_keystore_path = this.herondAndroidKeystorePath
-      args.herond_android_keystore_name = this.herondAndroidKeystoreName
-      args.herond_android_keystore_password = this.herondAndroidKeystorePassword
-      args.herond_android_key_password = this.herondAndroidKeyPassword
     }
   }
 
-  if (process.platform === 'win32' && this.build_omaha) {
-    args.build_omaha = this.build_omaha
-    args.tag_ap = this.tag_ap
-  }
-
-  if ((process.platform === 'win32' || process.platform === 'darwin') && this.build_delta_installer) {
+  if (process.platform === 'darwin' && this.build_delta_installer) {
     assert(this.last_chrome_installer, 'Need last_chrome_installer args for building delta installer')
     args.build_delta_installer = true
     args.last_chrome_installer = this.last_chrome_installer
@@ -403,118 +383,14 @@ Config.prototype.buildArgs = function () {
     args.cc_wrapper = path.join(this.nativeRedirectCCDir, 'redirect_cc')
   }
 
-  if ((this.getTargetOS() === 'linux' && this.targetArch === 'x86') ||
-      (this.getTargetOS() === 'win' && this.isHerondReleaseBuild())) {
-    // Minimal symbols to work around size restrictions:
-    // On Linux x86, ELF32 cannot be > 4GiB.
-    // For x86, x64, and Arm64 Windows, chrome.dll.pdb sometimes becomes
-    // > 4 GiB and llvm-pdbutil on that file errors out with "The data is in an
-    // unexpected format. Too many directory blocks". Associated llvm issue:
-    // https://github.com/llvm/llvm-project/issues/54445
-    args.symbol_level = 1
-  }
-
   if (this.getTargetOS() === 'mac' &&
       fs.existsSync(path.join(this.srcDir, 'build', 'mac_files', 'xcode_binaries', 'Contents'))) {
       // always use hermetic xcode for macos when available
       args.use_system_xcode = false
   }
 
-  if (this.getTargetOS() === 'linux') {
-    if (this.targetArch !== 'x86') {
-      // Include vaapi support
-      // TODO: Consider setting use_vaapi_x11 instead of use_vaapi. Also
-      // consider enabling it for x86 builds. See
-      // https://github.com/brave/brave-browser/issues/1024#issuecomment-1175397914
-      args.use_vaapi = true
-
-    }
-    if (this.targetArch === 'arm64') {
-      // We don't yet support Widevine on Arm64 Linux.
-      args.enable_widevine = false
-    }
-  }
-
-  // Enable Page Graph only in desktop builds.
-  // Page Graph gn args should always be set explicitly, because they are parsed
-  // from out/<dir>/args.gn by Python scripts during the build. We do this to
-  // handle gn args in upstream build scripts without introducing git conflict.
-  if (this.targetOS !== 'android' && this.targetOS !== 'ios') {
-    args.enable_herond_page_graph = true
-  } else {
-    args.enable_herond_page_graph = false
-  }
-  // Enable Page Graph WebAPI probes only in dev/nightly builds.
-  if (args.enable_herond_page_graph &&
-      (!this.isHerondReleaseBuild() || this.channel === 'dev' ||
-       this.channel === 'nightly')) {
-    args.enable_herond_page_graph_webapi_probes = true
-  } else {
-    args.enable_herond_page_graph_webapi_probes = false
-  }
-
   if (this.targetOS) {
     args.target_os = this.targetOS;
-  }
-
-  if (this.targetOS === 'android') {
-    args.android_channel = this.channel
-    if (!this.isReleaseBuild()) {
-      args.android_channel = 'default'
-      args.chrome_public_manifest_package = 'com.herond.browser_default'
-    } else if (this.channel === '') {
-      args.android_channel = 'stable'
-      args.chrome_public_manifest_package = 'com.herond.browser'
-    } else if (this.channel === 'beta') {
-      args.chrome_public_manifest_package = 'com.herond.browser_beta'
-      args.exclude_unwind_tables = false
-    } else if (this.channel === 'dev') {
-      args.chrome_public_manifest_package = 'com.herond.browser_dev'
-    } else if (this.channel === 'nightly') {
-      args.android_channel = 'canary'
-      args.chrome_public_manifest_package = 'com.herond.browser_nightly'
-      args.exclude_unwind_tables = false
-    }
-
-    args.target_android_base = this.targetAndroidBase
-    args.target_android_output_format =
-      this.targetAndroidOutputFormat || (this.buildConfig === 'Release' ? 'aab' : 'apk')
-    args.android_override_version_name = this.androidOverrideVersionName
-
-    args.herond_android_developer_options_code = this.herondAndroidDeveloperOptionsCode
-    args.herond_safetynet_api_key = this.herondSafetyNetApiKey
-    args.herond_safebrowsing_api_key = this.herondAndroidSafeBrowsingApiKey
-    args.enable_widevine = false
-    args.safe_browsing_mode = 2
-
-    // Feed is not used in Herond
-    args.enable_feed_v2 = false
-
-    // TODO(fixme)
-    args.enable_tor = false
-
-    // Fixes WebRTC IP leak with default option
-    args.enable_mdns = true
-
-    // We want it to be enabled for all configurations
-    args.disable_android_lint = false
-
-    if (this.targetArch === 'arm64') {
-      // TODO: Ideally we should properly compile our rust libraries in order to
-      // be able to use default 'standard' flow integrity. For now just revert
-      // it to 'pac'.
-      args.arm_control_flow_integrity = 'pac'
-    }
-
-    // These do not exist on android
-    // TODO - recheck
-    delete args.enable_nacl
-    delete args.enable_hangout_services_extension
-    // Ideally we'd not pass this on Linux CI and then
-    // not have a default value for this. But we'll
-    // eventually want it on Android, so keeping CI
-    // unchanged and deleting here for now.
-    delete args.gemini_client_secret
   }
 
   if (this.targetOS === 'ios') {
@@ -593,10 +469,6 @@ Config.prototype.shouldSign = function () {
     this.isComponentBuild() ||
     this.targetOS === 'ios') {
     return false
-  }
-
-  if (this.targetOS === 'android') {
-    return this.herondAndroidKeystorePath !== undefined
   }
 
   if (process.platform === 'darwin') {
@@ -681,19 +553,6 @@ Config.prototype.update = function (options) {
     this.targetArch = options.target_arch
   }
 
-  if (options.target_os === 'android') {
-    this.targetOS = 'android'
-    if (options.target_android_base) {
-      this.targetAndroidBase = options.target_android_base
-    }
-    if (options.target_android_output_format) {
-      this.targetAndroidOutputFormat = options.target_android_output_format
-    }
-    if (options.android_override_version_name) {
-      this.androidOverrideVersionName = options.android_override_version_name
-    }
-  }
-
   if (options.target_os) {
     this.targetOS = options.target_os
   }
@@ -732,10 +591,6 @@ Config.prototype.update = function (options) {
 
   if (options.herond_google_api_key) {
     this.herondGoogleApiKey = options.herond_google_api_key
-  }
-
-  if (options.herond_safebrowsing_api_key) {
-    this.herondAndroidSafeBrowsingApiKey = options.herond_safebrowsing_api_key
   }
 
   if (options.herond_safetynet_api_key) {
@@ -936,14 +791,7 @@ Config.prototype.update = function (options) {
 }
 
 Config.prototype.getTargetOS = function() {
-  if (this.targetOS)
     return this.targetOS
-  if (process.platform === 'darwin')
-    return 'mac'
-  if (process.platform === 'win32')
-    return 'win'
-  assert(process.platform === 'linux')
-  return 'linux'
 }
 
 Config.prototype.getCachePath = function () {
@@ -956,10 +804,7 @@ Object.defineProperty(Config.prototype, 'defaultOptions', {
     env = this.addPathToEnv(env, path.join(this.depotToolsDir, 'python-bin'), true)
     env = this.addPathToEnv(env, path.join(this.depotToolsDir, 'python2-bin'), true)
     env = this.addPathToEnv(env, this.depotToolsDir, true)
-    env = this.addPythonPathToEnv(env, path.join(this.srcDir, 'brave', 'chromium_src', 'python_modules'))
-    env = this.addPythonPathToEnv(env, path.join(this.srcDir, 'brave', 'script'))
     env = this.addPythonPathToEnv(env, path.join(this.srcDir, 'tools', 'grit', 'grit', 'extern'))
-    env = this.addPythonPathToEnv(env, path.join(this.srcDir, 'brave', 'vendor', 'requests'))
     env = this.addPythonPathToEnv(env, path.join(this.srcDir, 'build'))
     env = this.addPythonPathToEnv(env, path.join(this.srcDir, 'third_party', 'depot_tools'))
     env.DEPOT_TOOLS_WIN_TOOLCHAIN = '0'
@@ -1001,15 +846,6 @@ Object.defineProperty(Config.prototype, 'defaultOptions', {
       env.NINJA_SUMMARIZE_BUILD = 1
     }
 
-    if (process.platform === 'linux') {
-      env.LLVM_DOWNLOAD_GOLD_PLUGIN = '1'
-    }
-
-    if (process.platform === 'win32') {
-      // Disable vcvarsall.bat telemetry.
-      env.VSCMD_SKIP_SENDTELEMETRY = '1'
-    }
-
     return {
       env,
       stdio: 'inherit',
@@ -1022,7 +858,7 @@ Object.defineProperty(Config.prototype, 'defaultOptions', {
 
 Object.defineProperty(Config.prototype, 'outputDir', {
   get: function () {
-    const baseDir = path.join(this.rootDir, 'out')
+    const baseDir = path.join(this.srcDir, 'out')
     if (this.__outputDir) {
       if (path.isAbsolute(this.__outputDir)) {
         return this.__outputDir;

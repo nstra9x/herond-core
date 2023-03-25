@@ -17,7 +17,6 @@ program
   .option('--gclient_verbose', 'verbose output for gclient')
   .option('--target_os <target_os>', 'target OS')
   .option('--target_arch <target_arch>', 'target architecture')
-  .option('--target_android_base <target_android_base>', 'target Android OS level for apk or aab (classic, modern, mono)')
   .option('--init', 'initialize all dependencies')
   .option('--force', 'force reset all projects to origin/ref')
   .option('--sync_chromium [arg]', 'force or skip chromium sync (true/false/1/0)', JSON.parse)
@@ -99,9 +98,9 @@ function buildDefaultGClientConfig() {
   }
   if (config.targetOS) {
     out += toGClientConfigItem('target_os', [config.targetOS], false)
-  }
-  if (config.targetOsOnly) {
-    out += toGClientConfigItem('target_os_only', config.targetOsOnly, false)
+    if (config.targetOsOnly) {
+      out += toGClientConfigItem('target_os_only', "True", false)
+    }
   }
   if (config.targetOS === 'linux') {
     // Run hooks for Arm64. This in particular creates the arm64 sysroot.

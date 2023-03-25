@@ -80,13 +80,7 @@ const deleteFileIfOverrideIsNewer = (original, override) => {
 }
 
 const getAdditionalGenLocation = () => {
-  if (config.targetOS === 'android') {
-    if (config.targetArch === 'arm64') {
-      return 'android_clang_arm'
-    } else if (config.targetArch === 'x64') {
-      return 'android_clang_x86'
-    }
-  } else if ((process.platform === 'darwin' || process.platform === 'linux') && config.targetArch === 'arm64') {
+  if ((process.platform === 'darwin' || process.platform === 'linux') && config.targetArch === 'arm64') {
     return 'clang_x64_v8_arm64'
   }
   return ''
