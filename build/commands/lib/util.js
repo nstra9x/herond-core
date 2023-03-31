@@ -288,36 +288,6 @@ const util = {
     util.run('python', [path.join(config.herondCoreDir, 'script', 'sign_binaries.py'), '--build_dir=' + dir])
   },
 
-  // TODO(bridiver) - this should move to gn
-  generateWidevineSigFiles: () => {
-    if (process.platform !== 'win32')
-      return
-
-    const cert = config.sign_widevine_cert
-    const key = config.sign_widevine_key
-    const passwd = config.sign_widevine_passwd
-    const sig_generator = config.signature_generator
-    let src_dir = path.join(config.outputDir, 'signed_binaries')
-
-    if (!config.shouldSign())
-      src_dir = config.outputDir
-
-    console.log('generate Widevine sig files...')
-
-    util.run('python', [sig_generator, '--input_file=' + path.join(src_dir, 'herond.exe'),
-        '--flags=1',
-        '--certificate=' + cert,
-        '--private_key=' + key,
-        '--output_file=' + path.join(config.outputDir, 'herond.exe.sig'),
-        '--private_key_passphrase=' + passwd])
-    util.run('python', [sig_generator, '--input_file=' + path.join(src_dir, 'chrome.dll'),
-        '--flags=0',
-        '--certificate=' + cert,
-        '--private_key=' + key,
-        '--output_file=' + path.join(config.outputDir, 'chrome.dll.sig'),
-        '--private_key_passphrase=' + passwd])
-  },
-
   buildNativeRedirectCC: (options = config.defaultOptions) => {
     // Expected path to redirect_cc.
     const redirectCC = path.join(config.nativeRedirectCCDir, util.appendExeIfWin32('redirect_cc'))
@@ -337,11 +307,6 @@ const util = {
       use_goma: config.use_goma,
       goma_dir: config.realGomaDir,
       real_gomacc: path.join(config.realGomaDir, 'gomacc'),
-    }
-    // Temprorary workaround for VS2022 lld-link PDB issue. Should be resolved
-    // in May 2022 update.
-    if (process.platform === 'win32') {
-      gnArgs = {...gnArgs, is_component_build: true}
     }
 
     const buildArgsStr = util.buildArgsToString(gnArgs)
@@ -403,33 +368,6 @@ const util = {
       '-k', num_compile_failure,
       ...config.extraNinjaOpts
     ]
-
-    const use_goma_online = config.use_goma && !config.goma_offline
-    if (use_goma_online) {
-      assert(config.gomaServerHost !== undefined && config.gomaServerHost != null, 'goma server host must be set')
-      options.env.GOMA_SERVER_HOST = config.gomaServerHost
-
-      // Upload stats about Goma actions to the Goma backend.
-      options.env.GOMA_PROVIDE_INFO = true
-
-      // Disable HTTP2 proxy. According to EngFlow this has significant performance impact.
-      options.env.GOMACTL_USE_PROXY = 0
-
-      // This skips the auth check and make this call instant if compiler_proxy is already running.
-      // If compiler_proxy is not running, it will fail to start if no valid credentials are found.
-      options.env.GOMACTL_SKIP_AUTH = 1
-      const gomaStartInfo = util.runProcess('goma_ctl', ['ensure_start'], options)
-      delete options.env.GOMACTL_SKIP_AUTH
-
-      if (gomaStartInfo.status !== 0) {
-        const gomaLoginInfo = util.runProcess('goma_auth', ['info'], options)
-        if (gomaLoginInfo.status !== 0) {
-          console.log('Login required for using Goma. This is only needed once')
-          util.run('goma_auth', ['login'], options)
-        }
-        util.run('goma_ctl', ['ensure_start'], options)
-      }
-    }
 
     if (config.isCI && use_goma_online) {
       util.run('goma_ctl', ['showflags'], options)
@@ -654,17 +592,23 @@ const util = {
   },
 
   generateConfigArgs: () => {
-    let out = "# This file was generated to configure settings for build Herond Browser on iOS."
-    out += "target_os: " + "ios" + "\n"
-    out += "is_debug: " + config.isDebug + "\n"
-    out += "enable_dsyms: " + config.enable_dsyms + "\n"
-    out += "enable_stripping: " + config.enable_stripping + "\n"
-    out += "is_official_build: " + config.is_official_build + "\n"
-    out += "is_chrome_branded: " + config.is_chrome_branded + "\n"
-    out += "target_cpu: " + "arm64" + "\n"
-    out += "target_environment: " + config.target_environment + "\n"
+    let out = "# This file was generated to configure settings for build Herond Browser on iOS.\n\n"
+    out += "target_os = " + config.getTargetOS() + "\n"
+    out += "is_debug = " + config.getIsDebug() + "\n"
+    out += "enable_dsyms = " + config.getEnableDsyms() + "\n"
+    out += "enable_stripping = " + config.getEnableStripping() + "\n"
+    out += "is_official_build = " + config.getIsOfficialBuild() + "\n"
+    out += "is_chrome_branded = " + config.getIsChromeBranded() + "\n"
+    out += "target_cpu = " + config.getTargetCpu() + "\n"
+    out += "target_environment = " + config.getTargetEnvironment() + "\n"
+    out += "enable_remoting = " + config.getEnableRemoting() + "\n" 
 
-    fs.writeFileSync(config.ConfigFile, out)
+    if (!fs.existsSync(config.outputDir)) {
+      fs.mkdirSync(config.outputDir)
+    }
+
+    const configFilePath = path.join(config.outputDir, config.configFile)
+    fs.writeFileSync(configFilePath, out)
   }
 }
 

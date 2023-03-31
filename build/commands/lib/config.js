@@ -12,16 +12,9 @@ const assert = require('assert')
 const { spawnSync } = require('child_process')
 
 let npmCommand = 'npm'
-if (process.platform === 'win32') {
-  npmCommand += '.cmd'
-}
 let NpmConfig = null
-
 let dirName = __dirname
-// Use fs.realpathSync to normalize the path(__dirname could be c:\.. or C:\..).
-if (process.platform === 'win32') {
-  dirName = fs.realpathSync.native(dirName)
-}
+
 const rootDir = path.resolve(dirName, '..', '..', '..', '..', '..')
 const herondCoreDir = path.join(rootDir, 'src', 'herond')
 
@@ -92,94 +85,23 @@ const parseExtraInputs = (inputs, accumulator, callback) => {
 }
 
 const Config = function () {
-  this.sardineClientId = getNPMConfig(['sardine_client_id']) || ''
-  this.sardineClientSecret = getNPMConfig(['sardine_client_secret']) || ''
+  this.targetOS = "ios"
+  this.targetArch = "arm64"
   this.defaultBuildConfig = 'Component'
   this.buildConfig = this.defaultBuildConfig
-  this.signTarget = 'sign_app'
   this.buildTarget = 'herond'
   this.rootDir = rootDir
-  this.isUniversalBinary = false
-  this.scriptDir = path.join(this.rootDir, 'scripts')
-  this.srcDir = path.join(this.rootDir, 'src')
-  this.chromeVersion = this.getProjectVersion('chrome')
-  this.chromiumRepo = getNPMConfig(['projects', 'chrome', 'repository', 'url'])
   this.herondCoreDir = herondCoreDir
-  this.buildToolsDir = path.join(this.srcDir, 'build')
-  this.resourcesDir = path.join(this.rootDir, 'resources')
-  this.depotToolsDir = path.join(this.herondCoreDir, 'vendor', 'depot_tools')
+  this.scriptDir = path.join(this.rootDir, 'scripts')
   this.defaultGClientFile = path.join(this.rootDir, '.gclient')
   this.gClientFile = process.env.HEROND_GCLIENT_FILE || this.defaultGClientFile
-  this.gClientVerbose = getNPMConfig(['gclient_verbose']) || false
-  this.targetArch = getNPMConfig(['target_arch']) || process.arch
-  this.defaultTargetOS = "ios"
-  this.targetOS = getNPMConfig(['target_os']) ? getNPMConfig(['target_os']) : this.defaultTargetOS
-  this.targetEnvironment = getNPMConfig(['target_environment'])
-  this.gypTargetArch = 'x64'
-  this.herondGoogleApiKey = getNPMConfig(['herond_google_api_key']) || 'AIzaSyAREPLACEWITHYOUROWNGOOGLEAPIKEY2Q'
-  this.googleApiEndpoint = getNPMConfig(['herond_google_api_endpoint']) || 'https://www.googleapis.com/geolocation/v1/geolocate?key='
-  this.googleDefaultClientId = getNPMConfig(['google_default_client_id']) || ''
-  this.googleDefaultClientSecret = getNPMConfig(['google_default_client_secret']) || ''
-  this.herondServicesKey = getNPMConfig(['herond_services_key']) || ''
-  this.infuraProjectId = getNPMConfig(['herond_infura_project_id']) || ''
-  this.bitflyerClientId = getNPMConfig(['bitflyer_client_id']) || ''
-  this.bitflyerClientSecret = getNPMConfig(['bitflyer_client_secret']) || ''
-  this.bitflyerStagingClientId = getNPMConfig(['bitflyer_staging_client_id']) || ''
-  this.bitflyerStagingClientSecret = getNPMConfig(['bitflyer_staging_client_secret']) || ''
-  this.bitflyerStagingUrl = getNPMConfig(['bitflyer_staging_url']) || ''
-  this.geminiApiUrl = getNPMConfig(['gemini_api_url']) || ''
-  this.geminiApiStagingUrl = getNPMConfig(['gemini_api_staging_url']) || ''
-  this.geminiOauthUrl = getNPMConfig(['gemini_oauth_url']) || ''
-  this.geminiOauthStagingUrl = getNPMConfig(['gemini_oauth_staging_url']) || ''
-  this.geminiWalletClientId = getNPMConfig(['gemini_wallet_client_id']) || ''
-  this.geminiWalletClientSecret = getNPMConfig(['gemini_wallet_client_secret']) || ''
-  this.geminiWalletStagingClientId = getNPMConfig(['gemini_wallet_staging_client_id']) || ''
-  this.geminiWalletStagingClientSecret = getNPMConfig(['gemini_wallet_staging_client_secret']) || ''
-  this.upholdClientId = getNPMConfig(['uphold_client_id']) || ''
-  this.upholdClientSecret = getNPMConfig(['uphold_client_secret']) || ''
-  this.upholdStagingClientId = getNPMConfig(['uphold_staging_client_id']) || ''
-  this.upholdStagingClientSecret = getNPMConfig(['uphold_staging_client_secret']) || ''
-  this.herondSyncEndpoint = getNPMConfig(['herond_sync_endpoint']) || ''
-  this.safeBrowsingApiEndpoint = getNPMConfig(['safebrowsing_api_endpoint']) || ''
-  this.updaterProdEndpoint = getNPMConfig(['updater_prod_endpoint']) || ''
-  this.updaterDevEndpoint = getNPMConfig(['updater_dev_endpoint']) || ''
-  this.webcompatReportApiEndpoint = getNPMConfig(['webcompat_report_api_endpoint']) || 'https://webcompat.brave.com/1/webcompat'
-  this.rewardsGrantDevEndpoint = getNPMConfig(['rewards_grant_dev_endpoint']) || ''
-  this.rewardsGrantStagingEndpoint = getNPMConfig(['rewards_grant_staging_endpoint']) || ''
-  this.rewardsGrantProdEndpoint = getNPMConfig(['rewards_grant_prod_endpoint']) || ''
-  this.herondVersion = packageConfig(['version']) || '0.0.0'
-  this.releaseTag = this.herondVersion.split('+')[0]
-  this.mac_signing_identifier = getNPMConfig(['mac_signing_identifier'])
-  this.mac_installer_signing_identifier = getNPMConfig(['mac_installer_signing_identifier']) || ''
-  this.mac_signing_keychain = getNPMConfig(['mac_signing_keychain']) || 'login'
-  this.sparkleDSAPrivateKeyFile = getNPMConfig(['sparkle_dsa_private_key_file']) || ''
-  this.sparkleEdDSAPrivateKey = getNPMConfig(['sparkle_eddsa_private_key']) || ''
-  this.sparkleEdDSAPublicKey = getNPMConfig(['sparkle_eddsa_public_key']) || ''
-  this.notary_user = getNPMConfig(['notary_user']) || ''
-  this.notary_password = getNPMConfig(['notary_password']) || ''
+  this.srcDir = path.join(this.rootDir, 'src')
+  this.configFile = 'args.gn'
   this.channel = 'development'
-  this.git_cache_path = getNPMConfig(['git_cache_path'])
-  this.sccache = getNPMConfig(['sccache'])
-  this.gomaServerHost = getNPMConfig(['goma_server_host'])
-  this.isCI = process.env.BUILD_ID !== undefined
-  this.herondStatsApiKey = getNPMConfig(['herond_stats_api_key']) || ''
-  this.herondStatsUpdaterUrl = getNPMConfig(['herond_stats_updater_url']) || ''
-  this.ignore_compile_failure = false
-  this.enable_hangout_services_extension = true
-  this.enable_pseudolocales = false
-  this.sign_widevine_cert = process.env.SIGN_WIDEVINE_CERT || ''
-  this.sign_widevine_key = process.env.SIGN_WIDEVINE_KEY || ''
-  this.sign_widevine_passwd = process.env.SIGN_WIDEVINE_PASSPHRASE || ''
-  this.signature_generator = path.join(this.srcDir, 'third_party', 'widevine', 'scripts', 'signature_generator.py') || ''
-  this.extraGnArgs = {}
-  this.extraGnGenOpts = getNPMConfig(['herond_extra_gn_gen_opts']) || ''
-  this.extraNinjaOpts = []
-  this.herondSafetyNetApiKey = getNPMConfig(['herond_safetynet_api_key']) || ''
-  this.herondVariationsServerUrl = getNPMConfig(['herond_variations_server_url']) || ''
+  this.application  = 'gn_all'
+  this.chromiumRepo = getNPMConfig(['projects', 'chrome', 'repository', 'url'])
   this.nativeRedirectCCDir = path.join(this.rootDir, 'out', 'redirect_cc')
-  this.use_goma = getNPMConfig(['herond_use_goma']) || false
-  this.goma_offline = false
-  this.use_libfuzzer = false
+  this.depotToolsDir = path.join(this.herondCoreDir, 'vendor', 'depot_tools')
 
   if (process.env.GOMA_DIR !== undefined) {
     this.realGomaDir = process.env.GOMA_DIR
@@ -189,299 +111,88 @@ const Config = function () {
 }
 
 Config.prototype.isReleaseBuild = function () {
-  return this.buildConfig === 'Release'
-}
-
-Config.prototype.isHerondReleaseBuild = function () {
-  const npm_herond_relese_build = getNPMConfig(['is_herond_release_build'])
-  if (npm_herond_relese_build !== undefined) {
-    assert(npm_herond_relese_build === '0' || npm_herond_relese_build === '1',
-      'Bad is_herond_release_build npm value (should be 0 or 1)')
-    return npm_herond_relese_build === '1'
-  }
-
-  return false
+  return this.buildConfig.toLowerCase() === 'release'
 }
 
 Config.prototype.isComponentBuild = function () {
-  return this.buildConfig === 'Debug' || this.buildConfig === 'Component'
+  return this.buildConfig.toLowerCase() === 'debug' || this.buildConfig.toLowerCase() === 'component'
 }
 
 Config.prototype.isDebug = function () {
-  return this.buildConfig === 'Debug'
-}
-
-Config.prototype.enableCDMHostVerification = function () {
-  const enable = this.buildConfig === 'Release' &&
-    process.platform !== 'linux' &&
-    this.sign_widevine_cert !== "" &&
-    this.sign_widevine_key !== "" &&
-    this.sign_widevine_passwd !== "" &&
-    fs.existsSync(this.signature_generator)
-  if (enable) {
-    console.log('Widevine cdm host verification is enabled')
-  } else {
-    console.log('Widevine cdm host verification is disabled')
-  }
-  return enable
-}
-
-Config.prototype.isAsan = function () {
-  if (this.is_asan) {
-    return true
-  }
-  return false
+  return this.buildConfig.toLowerCase() === 'debug'
 }
 
 Config.prototype.isOfficialBuild = function () {
-  return this.isReleaseBuild() && !this.isAsan()
+  return this.buildConfig.toLowerCase() === 'official'
+}
+
+Config.prototype.isProfileBuild = function () {
+  return this.buildConfig.toLowerCase() === 'profile'
 }
 
 Config.prototype.getBrandingPathProduct = function () {
   return this.isOfficialBuild() ? "herond" : "herond-development"
 }
 
-Config.prototype.buildArgs = function () {
-  const version = this.herondVersion
-  let version_parts = version.split('+')[0]
-  version_parts = version_parts.split('.')
+//////////////////////////////////////////////////////////////
 
+Config.prototype.getTargetOS = function () {
+  return `"${this.targetOS}"`
+}
+
+Config.prototype.getIsDebug = function () {
+  return this.isDebug()
+}
+
+Config.prototype.getEnableDsyms = function () {
+  return this.isOfficialBuild() || this.isProfileBuild()
+}
+
+Config.prototype.getEnableStripping = function () {
+  return this.isOfficialBuild() || this.isProfileBuild()
+}
+
+Config.prototype.getIsOfficialBuild = function () {
+  return this.isOfficialBuild() || this.isProfileBuild()
+}
+
+Config.prototype.getIsChromeBranded = function () {
+  return this.isOfficialBuild()
+}
+
+Config.prototype.getTargetCpu = function () {
+  return `"${this.targetArch}"`
+}
+
+Config.prototype.getTargetEnvironment = function () {
+  return `"${this.targetEnvironment}"`
+}
+
+Config.prototype.getEnableRemoting = function () {
+  return false
+}
+
+///////////////////////////////////////////////
+
+Config.prototype.buildArgs = function () {
   let args = {
-    sardine_client_id: this.sardineClientId,
-    sardine_client_secret: this.sardineClientSecret,
-    is_asan: this.isAsan(),
-    enable_full_stack_frames_for_profiling: this.isAsan(),
-    v8_enable_verify_heap: this.isAsan(),
-    disable_fieldtrial_testing_config: true,
-    safe_browsing_mode: 1,
-    herond_services_key: this.herondServicesKey,
-    root_extra_deps: ["//herond"],
-    // TODO: Re-enable when chromium_src overrides work for files in relative
-    // paths like widevine_cmdm_compoennt_installer.cc
-    // use_jumbo_build: !this.officialBuild,
     is_component_build: this.isComponentBuild(),
-    is_universal_binary: this.isUniversalBinary,
-    proprietary_codecs: true,
-    ffmpeg_branding: "Chrome",
-    branding_path_component: "herond",
-    branding_path_product: this.getBrandingPathProduct(),
-    enable_nacl: false,
-    enable_widevine: true,
     target_cpu: this.targetArch,
     is_official_build: this.isOfficialBuild(),
     is_debug: this.isDebug(),
-    dcheck_always_on: getNPMConfig(['dcheck_always_on']) || this.isComponentBuild(),
     herond_channel: this.channel,
-    herond_google_api_key: this.herondGoogleApiKey,
-    herond_google_api_endpoint: this.googleApiEndpoint,
-    google_default_client_id: this.googleDefaultClientId,
-    google_default_client_secret: this.googleDefaultClientSecret,
-    herond_infura_project_id: this.infuraProjectId,
-    bitflyer_client_id: this.bitflyerClientId,
-    bitflyer_client_secret: this.bitflyerClientSecret,
-    bitflyer_staging_client_id: this.bitflyerStagingClientId,
-    bitflyer_staging_client_secret: this.bitflyerStagingClientSecret,
-    bitflyer_staging_url: this.bitflyerStagingUrl,
-    gemini_api_url: this.geminiApiUrl,
-    gemini_api_staging_url: this.geminiApiStagingUrl,
-    gemini_oauth_url: this.geminiOauthUrl,
-    gemini_oauth_staging_url: this.geminiOauthStagingUrl,
-    gemini_wallet_client_id: this.geminiWalletClientId,
-    gemini_wallet_client_secret: this.geminiWalletClientSecret,
-    gemini_wallet_staging_client_id: this.geminiWalletStagingClientId,
-    gemini_wallet_staging_client_secret: this.geminiWalletStagingClientSecret,
-    uphold_client_id: this.upholdClientId,
-    uphold_client_secret: this.upholdClientSecret,
-    uphold_staging_client_id: this.upholdStagingClientId,
-    uphold_staging_client_secret: this.upholdStagingClientSecret,
-    herond_version_major: version_parts[0],
-    herond_version_minor: version_parts[1],
-    herond_version_build: version_parts[2],
-    chrome_version_string: this.chromeVersion,
-    herondSyncEndpoint: this.herondSyncEndpoint,
-    safebrowsing_api_endpoint: this.safeBrowsingApiEndpoint,
-    herond_variations_server_url: this.herondVariationsServerUrl,
-    updater_prod_endpoint: this.updaterProdEndpoint,
-    updater_dev_endpoint: this.updaterDevEndpoint,
-    webcompat_report_api_endpoint: this.webcompatReportApiEndpoint,
-    rewards_grant_dev_endpoint: this.rewardsGrantDevEndpoint,
-    rewards_grant_staging_endpoint: this.rewardsGrantStagingEndpoint,
-    rewards_grant_prod_endpoint: this.rewardsGrantProdEndpoint,
-    herond_stats_api_key: this.herondStatsApiKey,
-    herond_stats_updater_url: this.herondStatsUpdaterUrl,
-    enable_hangout_services_extension: this.enable_hangout_services_extension,
-    enable_cdm_host_verification: this.enableCDMHostVerification(),
-    enable_pseudolocales: this.enable_pseudolocales,
-    skip_signing: !this.shouldSign(),
-    sparkle_dsa_private_key_file: this.sparkleDSAPrivateKeyFile,
-    sparkle_eddsa_private_key: this.sparkleEdDSAPrivateKey,
-    sparkle_eddsa_public_key: this.sparkleEdDSAPublicKey,
-    use_goma: this.use_goma,
-    use_libfuzzer: this.use_libfuzzer,
-    enable_updater: this.isOfficialBuild(),
-    enable_update_notifications: this.isOfficialBuild(),
-    ...this.extraGnArgs,
+    target_os: this.targetOS,
+
   }
 
-  if (!this.isHerondReleaseBuild()) {
-    args.chrome_pgo_phase = 0
-
-    if (process.platform === 'darwin' && this.targetOS != 'ios' && args.is_official_build) {
-      // Currently we're using is_official_build mode in PR builds on CI. This enables dSYMs
-      // by default, which slows down link phase, but also disables relocatable compilation
-      // on MacOS (aka 'zero goma cachehits' style).
-      //
-      // Don't create dSYMs in non-public Release builds.
-      // See //build/config/apple/symbols.gni for additional details.
-      args.enable_dsyms = false
-    }
+  if (this.targetEnvironment) {
+    args.target_environment = this.targetEnvironment
   }
 
-  if (this.shouldSign()) {
-    if (process.platform === 'darwin') {
-      args.mac_signing_identifier = this.mac_signing_identifier
-      args.mac_installer_signing_identifier = this.mac_installer_signing_identifier
-      args.mac_signing_keychain = this.mac_signing_keychain
-      if (this.notarize) {
-        args.notarize = true
-        args.notary_user = this.notary_user
-        args.notary_password = this.notary_password
-      }
-    }
-  }
-
-  if (process.platform === 'darwin' && this.build_delta_installer) {
-    assert(this.last_chrome_installer, 'Need last_chrome_installer args for building delta installer')
-    args.build_delta_installer = true
-    args.last_chrome_installer = this.last_chrome_installer
-  }
-
-  if (process.platform === 'darwin') {
-    args.allow_runtime_configurable_key_storage = true
-  }
-
-  if (this.isDebug() &&
-      !this.isComponentBuild() &&
-      this.targetOS !== 'ios' &&
-      this.targetOS !== 'android') {
-    args.enable_profiling = true
-  }
-
-  if (this.sccache) {
-    if (process.platform === 'win32') {
-      args.clang_use_chrome_plugins = false
-      args.use_thin_lto = true
-    }
-    args.enable_precompiled_headers = false
-  }
-
-  if (this.use_goma) {
-    // set goma_dir to the redirect cc output dir which then calls gomacc
-    // through env.CC_WRAPPER
-    args.goma_dir = path.join(this.nativeRedirectCCDir)
-  } else {
-    args.cc_wrapper = path.join(this.nativeRedirectCCDir, 'redirect_cc')
-  }
-
-  if (this.getTargetOS() === 'mac' &&
-      fs.existsSync(path.join(this.srcDir, 'build', 'mac_files', 'xcode_binaries', 'Contents'))) {
-      // always use hermetic xcode for macos when available
-      args.use_system_xcode = false
-  }
-
-  if (this.targetOS) {
-    args.target_os = this.targetOS;
-  }
-
-  if (this.targetOS === 'ios') {
-    if (this.targetEnvironment) {
-      args.target_environment = this.targetEnvironment
-    }
-    args.enable_dsyms = true
-    args.enable_stripping = !this.isComponentBuild()
-    // Component builds are not supported for iOS:
-    // https://chromium.googlesource.com/chromium/src/+/master/docs/component_build.md
-    args.is_component_build = false
-    args.ios_enable_code_signing = false
-    args.fatal_linker_warnings = !this.isComponentBuild()
-    // DCHECK's crash on Static builds without allowing the debugger to continue
-    // Can be removed when approprioate DCHECK's have been fixed:
-    // https://github.com/brave/brave-browser/issues/10334
-    args.dcheck_always_on = this.isComponentBuild()
-
-    args.ios_enable_content_widget_extension = false
-    args.ios_enable_search_widget_extension = false
-    args.ios_enable_share_extension = false
-    args.ios_enable_credential_provider_extension = false
-    args.ios_enable_widget_kit_extension = false
-
-    args.ios_provider_target = "//brave/ios/browser/providers:brave_providers"
-
-    args.ios_locales_pack_extra_source_patterns = [
-      "%root_gen_dir%/components/brave_components_strings_",
-    ]
-    args.ios_locales_pack_extra_deps = [
-      "//brave/components/resources:strings",
-    ]
-
-    delete args.safebrowsing_api_endpoint
-    delete args.safe_browsing_mode
-    delete args.proprietary_codecs
-    delete args.ffmpeg_branding
-    delete args.branding_path_component
-    delete args.branding_path_product
-    delete args.enable_nacl
-    delete args.enable_widevine
-    delete args.enable_hangout_services_extension
-    delete args.herond_google_api_endpoint
-    delete args.herond_google_api_key
-    delete args.herond_stats_api_key
-    delete args.herond_stats_updater_url
-    delete args.bitflyer_client_id
-    delete args.bitflyer_client_secret
-    delete args.bitflyer_staging_client_id
-    delete args.bitflyer_staging_client_secret
-    delete args.bitflyer_staging_url
-    delete args.gemini_api_url
-    delete args.gemini_api_staging_url
-    delete args.gemini_oauth_url
-    delete args.gemini_oauth_staging_url
-    delete args.gemini_wallet_client_id
-    delete args.gemini_wallet_client_secret
-    delete args.gemini_wallet_staging_client_id
-    delete args.gemini_wallet_staging_client_secret
-    delete args.gemini_client_secret
-    delete args.uphold_client_id
-    delete args.uphold_client_secret
-    delete args.uphold_staging_client_id
-    delete args.uphold_staging_client_secret
-    delete args.webcompat_report_api_endpoint
-    delete args.use_blink_v8_binding_new_idl_interface
-    delete args.v8_enable_verify_heap
-    delete args.herond_variations_server_url
-  }
+  args.enable_dsyms = true
+  args.enable_stripping = !this.isComponentBuild()
 
   return args
-}
-
-Config.prototype.shouldSign = function () {
-  if (this.skip_signing ||
-    this.isComponentBuild() ||
-    this.targetOS === 'ios') {
-    return false
-  }
-
-  if (process.platform === 'darwin') {
-    return this.mac_signing_identifier !== undefined
-  }
-
-  if (process.platform === 'win32') {
-    return process.env.CERT !== undefined ||
-      process.env.AUTHENTICODE_HASH !== undefined ||
-      process.env.SIGNTOOL_ARGS !== undefined
-  }
-
-  return false
 }
 
 Config.prototype.prependPath = function (oldPath, addPath) {
@@ -530,268 +241,22 @@ Config.prototype.getProjectRef = function (projectName) {
 }
 
 Config.prototype.update = function (options) {
-  if (options.sardine_client_secret) {
-    this.sardineClientSecret = options.sardine_client_secret
-  }
 
-  if (options.sardine_client_id) {
-    this.sardineClientId = options.sardine_client_id
-  }
-
-  if (options.universal) {
-    this.targetArch = 'arm64'
-    this.isUniversalBinary = true
-  }
-
-  if (options.target_arch === 'x86') {
-    this.targetArch = options.target_arch
-    this.gypTargetArch = 'ia32'
-  } else if (options.target_arch === 'ia32') {
-    this.targetArch = 'x86'
-    this.gypTargetArch = options.target_arch
-  } else if (options.target_arch) {
-    this.targetArch = options.target_arch
-  }
-
-  if (options.target_os) {
-    this.targetOS = options.target_os
+  if (options.C) {
+    this.__outputDir = options.C
   }
 
   if (options.target_environment) {
     this.targetEnvironment = options.target_environment
   }
 
-  if (options.is_asan) {
-    this.is_asan = true
-  } else {
-    this.is_asan = false
-  }
-
-  if (options.use_goma !== undefined) {
-    this.use_goma = options.use_goma
-  }
-
-  if (options.goma_offline) {
-    this.goma_offline = true
-  }
-
-  if (options.force_gn_gen) {
-    this.force_gn_gen = true;
-  } else {
-    this.force_gn_gen = false;
-  }
-
-  if (options.C) {
-    this.__outputDir = options.C
-  }
-
-  if (options.gclient_file && options.gclient_file !== 'default') {
-    this.gClientFile = options.gclient_file
-  }
-
-  if (options.herond_google_api_key) {
-    this.herondGoogleApiKey = options.herond_google_api_key
-  }
-
-  if (options.herond_safetynet_api_key) {
-    this.herondSafetyNetApiKey = options.herond_safetynet_api_key
-  }
-
-  if (options.herond_google_api_endpoint) {
-    this.googleApiEndpoint = options.herond_google_api_endpoint
-  }
-
-  if (options.herond_infura_project_id) {
-    this.infuraProjectId = options.infura_project_id
-  }
-
-  if (options.bitflyer_client_id) {
-    this.bitflyerClientId = options.bitflyer_client_id
-  }
-
-  if (options.bitflyer_client_secret) {
-    this.bitflyerClientSecret = options.bitflyer_client_secret
-  }
-
-  if (options.bitflyer_staging_client_id) {
-    this.bitflyerStagingClientId = options.bitflyer_staging_client_id
-  }
-
-  if (options.bitflyer_staging_client_secret) {
-    this.bitflyerStagingClientSecret = options.bitflyer_staging_client_secret
-  }
-
-  if (options.bitflyer_staging_url) {
-    this.bitflyerStagingUrl = options.bitflyer_staging_url
-  }
-
-  if (options.gemini_api_url) {
-    this.geminiApiUrl = options.gemini_api_url
-  }
-
-  if (options.gemini_api_staging_url) {
-    this.geminiApiStagingUrl = options.gemini_api_staging_url
-  }
-
-  if (options.gemini_oauth_url) {
-    this.geminiOauthUrl = options.gemini_oauth_url
-  }
-
-  if (options.gemini_oauth_staging_url) {
-    this.geminiOauthStagingUrl = options.gemini_oauth_staging_url
-  }
-
-  if (options.gemini_wallet_client_secret) {
-    this.geminiWalletClientSecret = options.gemini_wallet_client_secret
-  }
-
-  if (options.gemini_wallet_staging_client_id) {
-    this.geminiWalletStagingClientId = options.gemini_wallet_staging_client_id
-  }
-
-  if (options.gemini_wallet_staging_client_secret) {
-    this.geminiWalletStagingClientSecret = options.gemini_wallet_staging_client_secret
-  }
-
-  if (options.uphold_client_id) {
-    this.upholdClientId = options.uphold_client_id
-  }
-
-  if (options.uphold_client_secret) {
-    this.upholdClientSecret = options.uphold_client_secret
-  }
-
-  if (options.uphold_staging_client_id) {
-    this.upholdStagingClientId = options.uphold_staging_client_id
-  }
-
-  if (options.uphold_staging_client_secret) {
-    this.upholdStagingClientSecret = options.uphold_staging_client_secret
-  }
-
-  if (options.safebrowsing_api_endpoint) {
-    this.safeBrowsingApiEndpoint = options.safebrowsing_api_endpoint
-  }
-
-  if (options.updater_prod_endpoint) {
-    this.updaterDevEndpoint = options.updater_prod_endpoint
-  }
-
-  if (options.updater_dev_endpoint) {
-    this.updaterDevEndpoint = options.updater_dev_endpoint
-  }
-
-  if (options.webcompat_report_api_endpoint) {
-    this.webcompatReportApiEndpoint = options.webcompat_report_api_endpoint
-  }
-
-  if (options.rewards_grant_dev_endpoint) {
-    this.rewardsGrantDevEndpoint = options.rewards_grant_dev_endpoint
-  }
-
-  if (options.rewards_grant_staging_endpoint) {
-    this.rewardsGrantStagingEndpoint = options.rewards_grant_staging_endpoint
-  }
-
-  if (options.rewards_grant_prod_endpoint) {
-    this.rewardsGrantProdEndpoint = options.rewards_grant_prod_endpoint
-  }
-
-  if (options.herond_stats_api_key) {
-    this.herondStatsApiKey = options.herond_stats_api_key
-  }
-
-  if (options.herond_stats_updater_url) {
-    this.herondStatsUpdaterUrl = options.herond_stats_updater_url
-  }
-
   if (options.channel) {
     this.channel = options.channel
-  } else if (this.buildConfig === 'Release') {
-    this.channel = 'release'
   }
 
-  if (this.channel === 'release') {
-    // empty for release channel
-    this.channel = ''
+  if (options.application) {
+    this.application = options.application
   }
-
-  if (process.platform === 'win32' && options.build_omaha) {
-    this.build_omaha = true
-    this.tag_ap = options.tag_ap
-  }
-
-  if (options.skip_signing) {
-    this.skip_signing = true
-  }
-
-  if (options.build_delta_installer) {
-    this.build_delta_installer = true
-    this.last_chrome_installer = options.last_chrome_installer
-  }
-
-  if (options.mac_signing_identifier)
-    this.mac_signing_identifier = options.mac_signing_identifier
-
-  if (options.mac_installer_signing_identifier)
-    this.mac_installer_signing_identifier = options.mac_installer_signing_identifier
-
-  if (options.mac_signing_keychain)
-    this.mac_signing_keychain = options.mac_signing_keychain
-
-  if (options.notarize)
-    this.notarize = true
-
-  if (options.gclient_verbose)
-    this.gClientVerbose = options.gclient_verbose
-
-  if (options.ignore_compile_failure)
-    this.ignore_compile_failure = true
-
-  if (options.xcode_gen) {
-    assert(process.platform === 'darwin' || options.target_os === 'ios')
-    if (options.xcode_gen === 'ios') {
-      this.xcode_gen_target = '//brave/ios:*'
-    } else {
-      this.xcode_gen_target = options.xcode_gen
-    }
-  }
-
-  if (options.gn) {
-    parseExtraInputs(options.gn, this.extraGnArgs, (args, key, value) => {
-      try {
-        value = JSON.parse(value)
-      } catch (e) {
-        // On parse error, leave value as string.
-      }
-      args[key] = value
-    })
-  }
-
-  if (options.ninja) {
-    parseExtraInputs(options.ninja, this.extraNinjaOpts, (opts, key, value) => {
-      opts.push(`-${key}`)
-      opts.push(value)
-    })
-  }
-
-  if (this.goma_offline || !this.use_goma) {
-    // Pass '--offline' also when '--use_goma' is not set to disable goma detect in
-    // autoninja when doing local builds.
-    this.extraNinjaOpts.push('--offline')
-  }
-
-  if (options.target) {
-    this.buildTarget = options.target
-  }
-
-  if (options.use_libfuzzer) {
-    this.use_libfuzzer = options.use_libfuzzer
-  }
-}
-
-Config.prototype.getTargetOS = function() {
-    return this.targetOS
 }
 
 Config.prototype.getCachePath = function () {

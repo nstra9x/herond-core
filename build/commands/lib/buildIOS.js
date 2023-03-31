@@ -6,15 +6,17 @@ const buildIOS = (buildConfig = config.defaultBuildConfig, options) => {
   config.buildConfig = buildConfig
   config.update(options)
 
-  if (config.xcode_gen_target) {
-    util.generateXcodeWorkspace()
-  }
+  util.run("herond/build/commands/scripts/setup-gn.py", [] ,{ cwd: config.srcDir })
 
-  util.buildTarget()
+  //if (config.xcode_gen_target) {
+   // util.generateXcodeWorkspace()
+  //}
 
-  util.generateConfigArgs(config)
+  //util.buildTarget()
 
-  util.run('autoninja', ['-C', outDir, application], { stdio: 'inherit', cwd: config.srcDir })
+  //util.generateConfigArgs()
+
+  //util.run('autoninja', ['-C', outDir, application], { stdio: 'inherit', cwd: config.srcDir })
 
   console.log("... build project done.")
 }

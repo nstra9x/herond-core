@@ -70,19 +70,10 @@ function buildDefaultGClientConfig() {
       managed: '%False%',
       name: 'src',
       url: config.chromiumRepo,
-      custom_deps: {
-        'src/third_party/WebKit/LayoutTests': '%None%',
-        'src/chrome_frame/tools/test/reference_build/chrome': '%None%',
-        'src/chrome_frame/tools/test/reference_build/chrome_win': '%None%',
-        'src/chrome/tools/test/reference_build/chrome': '%None%',
-        'src/chrome/tools/test/reference_build/chrome_linux': '%None%',
-        'src/chrome/tools/test/reference_build/chrome_mac': '%None%',
-        'src/chrome/tools/test/reference_build/chrome_win': '%None%'
-      },
-      custom_vars: {
-        'checkout_pgo_profiles': config.isHerondReleaseBuild() ? '%True%' :
-                                                                '%False%'
-      }
+      deps_file: 'DEPS',
+      custom_deps: {},
+      custom_vars: {},
+      safesync_url: ''
     },
     {
       managed: '%False%',
@@ -96,15 +87,9 @@ function buildDefaultGClientConfig() {
   if (process.env.GIT_CACHE_PATH) {
     out += toGClientConfigItem('cache_dir', process.env.GIT_CACHE_PATH)
   }
-  if (config.targetOS) {
+  if (config.targetOS === 'ios') {
     out += toGClientConfigItem('target_os', [config.targetOS], false)
-    if (config.targetOsOnly) {
-      out += toGClientConfigItem('target_os_only', "True", false)
-    }
-  }
-  if (config.targetOS === 'linux') {
-    // Run hooks for Arm64. This in particular creates the arm64 sysroot.
-    out += toGClientConfigItem('target_cpu', ['arm64'], false)
+    out += toGClientConfigItem('target_os_only', '%True%', false)
   }
 
   fs.writeFileSync(config.defaultGClientFile, out)
@@ -213,10 +198,6 @@ function syncHerond(program) {
       path.join(config.herondCoreDir, '.herond_gclient'))
 }
 
-function genXcodeProject() {
-    util.run('python3', ['ios/build/tools/setup-gn.py'], { cwd: config.srcDir })
-}
-
 async function RunCommand() {
   program.parse(process.argv)
   config.update(program)
@@ -265,13 +246,6 @@ async function RunCommand() {
     // pretty quick in a no-op scenario.
     util.runGClient(['runhooks'])
     Log.progress('...gclient runhooks done.')
-  }
-
-  // Generate Xcode project if target is iOS
-  if (config.targetOS === "ios") {
-    Log.progress('Generating Xcode project...')
-    genXcodeProject()
-    Log.progress('... generate Xcode project done.')
   }
 }
 
