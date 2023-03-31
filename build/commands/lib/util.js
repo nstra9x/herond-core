@@ -10,6 +10,7 @@ const fs = require('fs-extra')
 const crypto = require('crypto')
 const Log = require('./sync/logging')
 const assert = require('assert')
+const { exit } = require('process')
 
 const mergeWithDefault = (options) => {
   return Object.assign({}, config.defaultOptions, options)
@@ -390,17 +391,21 @@ const util = {
     const genScript = path.join(config.herondCoreDir, 'build', 'ios', 'setup-gn.py')
     console.log("outputDir ==== " + config.outputDir)
 
-    //const args = util.buildArgsToString(config.buildArgs())
-    
     const genArgs = [
       '--build-dir='+ config.outputDir,
       '--gn-path=' + path.join(config.depotToolsDir, 'gn'),
       '--project-name=' + config.xcode_gen_target,
       '--build-config=' + config.buildConfig,
       '--target-environment=' + config.targetEnvironment
-    ]
+      ]
 
-    util.run('python3', [genScript, genArgs], options)
+    const args = util.buildArgsToString(genArgs)
+
+    console.log("genArgs === " + genArgs)
+    console.log("args === " + args)
+    exit(0)
+
+    util.run('python3', [genScript, args], options)
   },
 
   lint: (options = {}) => {
