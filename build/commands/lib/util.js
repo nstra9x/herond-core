@@ -367,42 +367,17 @@ const util = {
     let ninjaOpts = [
       '-C', options.outputDir || config.outputDir, target,
       '-k', num_compile_failure,
-      ...config.extraNinjaOpts
+      ...config.application
     ]
-
-    if (config.isCI && use_goma_online) {
-      util.run('goma_ctl', ['showflags'], options)
-      util.run('goma_ctl', ['stat'], options)
-    }
-
-    // Setting `AUTONINJA_BUILD_ID` allows tracing Goma remote execution which helps with
-    // debugging issues (e.g., slowness or remote-failures).
     options.env.AUTONINJA_BUILD_ID = buildId
     util.run('autoninja', ninjaOpts, options)
-
-    if (config.isCI && use_goma_online) {
-      util.run('goma_ctl', ['stat'], options)
-    }
   },
 
   generateXcodeWorkspace: (options = config.defaultOptions) => {
     console.log('generating Xcode workspace for "' + config.xcode_gen_target + '"...')
 
-    const genScript = path.join(config.herondCoreDir, 'build', 'ios', 'setup-gn.py')
-
-    /*const genArgs = [
-      '--build-dir='+ config.outputDir,
-      '--gn-path=' + path.join(config.depotToolsDir, 'gn'),
-      '--project-name=' + config.xcode_gen_target,
-      '--build-config=' + config.buildConfig,
-      '--target-environment=' + config.targetEnvironment
-      ]*/
-
     const args = util.buildArgsToString(config.buildArgs())
-
-    console.log("genArgs === " + genArgs)
-    console.log("args === " + args)
-    exit(0)
+    const genScript = path.join(config.herondCoreDir, 'build', 'ios', 'setup-gn.py')
 
     util.run('python3', [genScript, args], options)
   },
@@ -508,7 +483,7 @@ const util = {
       }
       args += val ? arg + '=' + val + ' ' : arg + ' '
     }
-    return args.replace(/"/g,'\\"')
+    return args
   },
 
   walkSync: (dir, filter = null, filelist = []) => {

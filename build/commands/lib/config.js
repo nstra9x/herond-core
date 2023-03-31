@@ -147,26 +147,6 @@ Config.prototype.buildArgs = function () {
   return args
 }
 
-/*Config.prototype.buildArgs = function () {
-  let args = {
-    is_component_build: this.isComponentBuild(),
-    target_cpu: this.targetArch,
-    is_official_build: this.isOfficialBuild(),
-    is_debug: this.isDebug(),
-    herond_channel: this.channel,
-    target_os: this.targetOS,
-  }
-
-  if (this.targetEnvironment) {
-    args.target_environment = this.targetEnvironment
-  }
-
-  args.enable_dsyms = true
-  args.enable_stripping = !this.isComponentBuild()
-
-  return args
-}*/
-
 Config.prototype.prependPath = function (oldPath, addPath) {
   let newPath = oldPath.split(path.delimiter)
   newPath.unshift(addPath)
