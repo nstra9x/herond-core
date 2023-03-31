@@ -139,10 +139,10 @@ Config.prototype.getBrandingPathProduct = function () {
 Config.prototype.buildArgs = function () {
   let args = {
     '--build-dir': this.outputDir,
-    '--gn-path' : path.join(config.depotToolsDir, 'gn'),
-    '--project-name' : config.xcode_gen_target,
-    '--build-config' : config.buildConfig,
-    '--target-environment' : config.targetEnvironment
+    '--gn-path': path.join(this.depotToolsDir, 'gn'),
+    '--project-name': this.xcode_gen_target,
+    '--build-config': this.buildConfig,
+    '--target-environment': this.targetEnvironment
   }
   return args
 }
