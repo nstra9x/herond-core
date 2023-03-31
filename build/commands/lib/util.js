@@ -395,9 +395,9 @@ const util = {
     const genArgs = [
       '--build-dir='+ config.outputDir,
       '--gn-path=' + path.join(config.depotToolsDir, 'gn'),
-      '--project-name=', config.xcode_gen_target,
-      '--build-config=', config.buildConfig,
-      '--target-environment=', config.targetEnvironment
+      '--project-name=' + config.xcode_gen_target,
+      '--build-config=' + config.buildConfig,
+      '--target-environment=' + config.targetEnvironment
     ]
 
     util.run('python3', [genScript, genArgs], options)
