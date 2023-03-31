@@ -17,8 +17,8 @@ import sys
 import tempfile
 
 
-SUPPORTED_TARGETS = ('iphoneos', 'iphonesimulator', 'maccatalyst')
-SUPPORTED_CONFIGS = ('Debug', 'Release', 'Profile', 'Official')
+SUPPORTED_TARGETS = ('device', 'simulator', 'catalyst')
+SUPPORTED_CONFIGS = ('Debug', 'Release', 'Profile', 'Official', 'Component')
 ADDITIONAL_FILE_ROOTS = ('//ios', '//ios_internal', '//docs', '//components')
 
 # Pattern matching lines from ~/.lldbinit that must not be copied to the
@@ -115,7 +115,7 @@ class GnGenerator(object):
       if goma_dir:
         args.append(('goma_dir', '"%s"' % os.path.expanduser(goma_dir)))
 
-    is_debug = self._config == 'Debug'
+    is_debug = self._config in ('Debug', 'Component')
     official = self._config == 'Official'
     is_optim = self._config in ('Profile', 'Official')
 
@@ -158,7 +158,7 @@ class GnGenerator(object):
       stream.write('# to configure settings.\n')
       stream.write('\n')
 
-      if self._target != 'maccatalyst':
+      if self._target != 'catalyst':
         if self._settings.has_section('$imports$'):
           for import_rule in self._settings.values('$imports$'):
             stream.write('import("%s")\n' % import_rule)
@@ -262,18 +262,18 @@ def FindGn():
   return None
 
 
-def GenerateXcodeProject(gn_path, root_dir, proj_name, out_dir, settings):
+def GenerateXcodeProject(gn_path, root_dir, proj_name, out_dir, build_config, target_environment, settings):
   '''Generate Xcode project with Xcode and convert to multi-configurations.'''
   prefix = os.path.abspath(os.path.join(out_dir, '_temp'))
   temp_path = tempfile.mkdtemp(prefix=prefix)
   try:
-    generator = GnGenerator(settings, 'Debug', 'iphonesimulator')
+    generator = GnGenerator(settings, build_config, target_environment)
     generator.Generate(gn_path, proj_name, root_dir, temp_path)
     convert_gn_xcodeproj.ConvertGnXcodeProject(
         root_dir,
         '%s.xcodeproj' % proj_name,
         os.path.join(temp_path),
-        os.path.join(out_dir, 'build'),
+        os.path.join(out_dir, build_config),
         SUPPORTED_CONFIGS)
   finally:
     if os.path.exists(temp_path):
@@ -363,6 +363,12 @@ def Main(args):
   parser.add_argument(
       '--no-xcode-project', action='store_true', default=False,
       help='do not generate the build directory with XCode project')
+  parser.add_argument(
+      '--build-config', default='Component', dest='build_config',
+      help='supported config to build: Component, Debug, Release')
+  parser.add_argument(
+      '--target-environment', default='simulator', dest='target_environment',
+      help='supported environment to build: simulator, device, catalyst')
   args = parser.parse_args(args)
 
   # Load configuration (first global and then any user overrides).
@@ -401,7 +407,7 @@ def Main(args):
     os.makedirs(out_dir)
 
   if not args.no_xcode_project:
-    GenerateXcodeProject(gn_path, args.root, args.proj_name, out_dir, settings)
+    GenerateXcodeProject(gn_path, args.root, args.proj_name, out_dir, args.build_config, args.target_environment, settings)
     CreateLLDBInitFile(args.root, out_dir, settings)
   GenerateGnBuildRules(gn_path, args.root, out_dir, settings)
 

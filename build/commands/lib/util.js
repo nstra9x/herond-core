@@ -388,16 +388,17 @@ const util = {
     console.log('generating Xcode workspace for "' + config.xcode_gen_target + '"...')
 
     const genScript = path.join(config.herondCoreDir, 'build', 'ios', 'setup-gn.py')
+    console.log("outputDir ==== " + config.outputDir)
 
-    const args = util.buildArgsToString(config.buildArgs())
+    //const args = util.buildArgsToString(config.buildArgs())
     
     const genArgs = [
-      '--root', config.srcDir,
-      '--gn-path', path.join(config.depotToolsDir, 'gn'),
-      '--project-name', config.xcode_gen_target,
+      '--build-dir='+ config.outputDir,
+      '--gn-path=' + path.join(config.depotToolsDir, 'gn'),
+      '--project-name=', config.xcode_gen_target,
     ]
 
-    util.run('genScript', genArgs, options)
+    util.run(genScript, genArgs, options)
   },
 
   lint: (options = {}) => {
