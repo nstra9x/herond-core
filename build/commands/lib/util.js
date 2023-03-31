@@ -396,10 +396,11 @@ const util = {
       '--build-dir='+ config.outputDir,
       '--gn-path=' + path.join(config.depotToolsDir, 'gn'),
       '--project-name=', config.xcode_gen_target,
+      '--build-config=', config.buildConfig,
+      '--target-environment=', config.targetEnvironment
     ]
 
-    fs.chmod(genScript, 0755)
-    util.run(genScript, genArgs, options)
+    util.run('python3', [genScript, genArgs], options)
   },
 
   lint: (options = {}) => {
@@ -591,26 +592,6 @@ const util = {
     const excludeFileName = util.getGitInfoExcludeFileName(repoDir, true)
     fs.appendFileSync(excludeFileName, '\n' + exclusion)
   },
-
-  generateConfigArgs: () => {
-    let out = "# This file was generated to configure settings for build Herond Browser on iOS.\n\n"
-    out += "target_os = " + config.getTargetOS() + "\n"
-    out += "is_debug = " + config.getIsDebug() + "\n"
-    out += "enable_dsyms = " + config.getEnableDsyms() + "\n"
-    out += "enable_stripping = " + config.getEnableStripping() + "\n"
-    out += "is_official_build = " + config.getIsOfficialBuild() + "\n"
-    out += "is_chrome_branded = " + config.getIsChromeBranded() + "\n"
-    out += "target_cpu = " + config.getTargetCpu() + "\n"
-    out += "target_environment = " + config.getTargetEnvironment() + "\n"
-    out += "enable_remoting = " + config.getEnableRemoting() + "\n" 
-
-    if (!fs.existsSync(config.outputDir)) {
-      fs.mkdirSync(config.outputDir)
-    }
-
-    const configFilePath = path.join(config.outputDir, config.configFile)
-    fs.writeFileSync(configFilePath, out)
-  }
 }
 
 module.exports = util
