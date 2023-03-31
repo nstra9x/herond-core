@@ -82,15 +82,15 @@ class GnGenerator(object):
   FAT_BUILD_DEFAULT_ARCH = '64-bit'
 
   TARGET_CPU_VALUES = {
-    'iphoneos': '"arm64"',
-    'iphonesimulator': HostCpuArch(),
-    'maccatalyst': HostCpuArch(),
+    'device': '"arm64"',
+    'simulator': HostCpuArch(),
+    'catalyst': HostCpuArch(),
   }
 
   TARGET_ENVIRONMENT_VALUES = {
-    'iphoneos': '"device"',
-    'iphonesimulator': '"simulator"',
-    'maccatalyst': '"catalyst"'
+    'device': '"device"',
+    'simulator': '"simulator"',
+    'catalyst': '"catalyst"'
   }
 
   def __init__(self, settings, config, target):
@@ -405,6 +405,8 @@ def Main(args):
   out_dir = os.path.join(args.root, args.build_dir)
   if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
+
+  print("rootDir === " + args.root)
 
   if not args.no_xcode_project:
     GenerateXcodeProject(gn_path, args.root, args.proj_name, out_dir, args.build_config, args.target_environment, settings)

@@ -295,6 +295,9 @@ Object.defineProperty(Config.prototype, 'outputDir', {
       }
       return path.join(baseDir, this.__outputDir)
     }
+    else {
+      return path.join(baseDir, "Component")
+    }
 
     let buildConfigDir = this.buildConfig
     if (this.targetArch && this.targetArch != 'x64') {
