@@ -98,7 +98,9 @@ const Config = function () {
   this.srcDir = path.join(this.rootDir, 'src')
   this.configFile = 'args.gn'
   this.channel = 'development'
-  this.application  = 'gn_all'
+  this.application = 'gn_all'
+  this.targetEnvironment = "simulator"
+  this.xcode_gen_target = "build"
   this.chromiumRepo = getNPMConfig(['projects', 'chrome', 'repository', 'url'])
   this.nativeRedirectCCDir = path.join(this.rootDir, 'out', 'redirect_cc')
   this.depotToolsDir = path.join(this.herondCoreDir, 'vendor', 'depot_tools')
@@ -134,47 +136,7 @@ Config.prototype.getBrandingPathProduct = function () {
   return this.isOfficialBuild() ? "herond" : "herond-development"
 }
 
-//////////////////////////////////////////////////////////////
-
-Config.prototype.getTargetOS = function () {
-  return `"${this.targetOS}"`
-}
-
-Config.prototype.getIsDebug = function () {
-  return this.isDebug()
-}
-
-Config.prototype.getEnableDsyms = function () {
-  return this.isOfficialBuild() || this.isProfileBuild()
-}
-
-Config.prototype.getEnableStripping = function () {
-  return this.isOfficialBuild() || this.isProfileBuild()
-}
-
-Config.prototype.getIsOfficialBuild = function () {
-  return this.isOfficialBuild() || this.isProfileBuild()
-}
-
-Config.prototype.getIsChromeBranded = function () {
-  return this.isOfficialBuild()
-}
-
-Config.prototype.getTargetCpu = function () {
-  return `"${this.targetArch}"`
-}
-
-Config.prototype.getTargetEnvironment = function () {
-  return `"${this.targetEnvironment}"`
-}
-
-Config.prototype.getEnableRemoting = function () {
-  return false
-}
-
-///////////////////////////////////////////////
-
-Config.prototype.buildArgs = function () {
+/*Config.prototype.buildArgs = function () {
   let args = {
     is_component_build: this.isComponentBuild(),
     target_cpu: this.targetArch,
@@ -182,7 +144,6 @@ Config.prototype.buildArgs = function () {
     is_debug: this.isDebug(),
     herond_channel: this.channel,
     target_os: this.targetOS,
-
   }
 
   if (this.targetEnvironment) {
@@ -193,7 +154,7 @@ Config.prototype.buildArgs = function () {
   args.enable_stripping = !this.isComponentBuild()
 
   return args
-}
+}*/
 
 Config.prototype.prependPath = function (oldPath, addPath) {
   let newPath = oldPath.split(path.delimiter)
@@ -256,6 +217,10 @@ Config.prototype.update = function (options) {
 
   if (options.application) {
     this.application = options.application
+  }
+
+  if (options.xcode_gen) {
+    this.xcode_gen_target = options.xcode_gen
   }
 }
 

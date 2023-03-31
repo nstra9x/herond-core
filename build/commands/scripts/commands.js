@@ -27,6 +27,7 @@ program
     .option('--target_environment <target_environment>', 'target environment (device, catalyst, simulator)')
     .option('--channel <target_channel>', 'target channel to build', /^(beta|dev|nightly|release)$/i)
     .option('--application <target_application>', 'Build with options', /^(gn_all|content_shell|ios_web_shell)$/i)
+    .option('--xcode_gen <target>', 'Generate an Xcode workspace to //out/<target>')
     .arguments('[build_config]')
     .action(buildIOS)
 
