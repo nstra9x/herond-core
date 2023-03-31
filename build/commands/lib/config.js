@@ -136,6 +136,17 @@ Config.prototype.getBrandingPathProduct = function () {
   return this.isOfficialBuild() ? "herond" : "herond-development"
 }
 
+Config.prototype.buildArgs = function () {
+  let args = {
+    '--build-dir': this.outputDir,
+    '--gn-path' : path.join(config.depotToolsDir, 'gn'),
+    '--project-name' : config.xcode_gen_target,
+    '--build-config' : config.buildConfig,
+    '--target-environment' : config.targetEnvironment
+  }
+  return args
+}
+
 /*Config.prototype.buildArgs = function () {
   let args = {
     is_component_build: this.isComponentBuild(),
