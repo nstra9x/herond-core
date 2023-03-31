@@ -398,6 +398,7 @@ const util = {
       '--project-name=', config.xcode_gen_target,
     ]
 
+    fs.chmod(genScript, 0755)
     util.run(genScript, genArgs, options)
   },
 
