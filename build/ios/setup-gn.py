@@ -87,12 +87,6 @@ class GnGenerator(object):
     'catalyst': HostCpuArch(),
   }
 
-  TARGET_ENVIRONMENT_VALUES = {
-    'device': '"device"',
-    'simulator': '"simulator"',
-    'catalyst': '"catalyst"'
-  }
-
   def __init__(self, settings, config, target):
     assert target in SUPPORTED_TARGETS
     assert config in SUPPORTED_CONFIGS
@@ -130,9 +124,7 @@ class GnGenerator(object):
       args.append(('use_system_xcode', False))
 
     args.append(('target_cpu', self.TARGET_CPU_VALUES[self._target]))
-    args.append((
-        'target_environment',
-        self.TARGET_ENVIRONMENT_VALUES[self._target]))
+    args.append(('target_environment', '"' + self._target + '"'))
 
     # Add user overrides after the other configurations so that they can
     # refer to them and override them.
@@ -232,6 +224,8 @@ class GnGenerator(object):
     gn_command.append('gen')
     gn_command.append('//%s' %
         os.path.relpath(os.path.abspath(out_path), os.path.abspath(src_path)))
+    print("gn_command ==== ")
+    print(*gn_command)
     return gn_command
 
 
@@ -262,9 +256,9 @@ def FindGn():
   return None
 
 
-def GenerateXcodeProject(gn_path, root_dir, proj_name, out_dir, build_config, target_environment, settings):
+def GenerateXcodeProject(gn_path, root_dir, out_dir, build_config, target_environment, proj_name, settings):
   '''Generate Xcode project with Xcode and convert to multi-configurations.'''
-  prefix = os.path.abspath(os.path.join(out_dir, '_temp'))
+  prefix = os.path.abspath(os.path.join(root_dir, 'out', '_temp'))
   temp_path = tempfile.mkdtemp(prefix=prefix)
   try:
     generator = GnGenerator(settings, build_config, target_environment)
@@ -273,18 +267,18 @@ def GenerateXcodeProject(gn_path, root_dir, proj_name, out_dir, build_config, ta
         root_dir,
         '%s.xcodeproj' % proj_name,
         os.path.join(temp_path),
-        os.path.join(out_dir, build_config),
+        os.path.join(out_dir),
         SUPPORTED_CONFIGS)
   finally:
     if os.path.exists(temp_path):
       shutil.rmtree(temp_path)
 
-def CreateLLDBInitFile(root_dir, out_dir, build_config, settings):
+def CreateLLDBInitFile(root_dir, out_dir, settings):
   '''
   Generate an .lldbinit file for the project that load the script that fixes
   the mapping of source files (see docs/ios/build_instructions.md#debugging).
   '''
-  with open(os.path.join(out_dir, build_config, '.lldbinit'), 'w') as lldbinit:
+  with open(os.path.join(out_dir, '.lldbinit'), 'w') as lldbinit:
     lldb_script_dir = os.path.join(os.path.abspath(root_dir), 'tools', 'lldb')
     lldbinit.write('script sys.path[:0] = [\'%s\']\n' % lldb_script_dir)
     lldbinit.write('script import lldbinit\n')
@@ -323,19 +317,16 @@ def CreateLLDBInitFile(root_dir, out_dir, build_config, settings):
 
 def GenerateGnBuildRules(gn_path, root_dir, out_dir, build_config, target_environment, settings):
   '''Generates all template configurations for gn.'''
-  build_dir = os.path.join(out_dir, '%s' % build_config)
-  if not os.path.isdir(build_dir):
-    os.makedirs(build_dir)
+  if not os.path.isdir(out_dir):
+    os.makedirs(out_dir)
 
   generator = GnGenerator(settings, build_config, target_environment)
-  generator.CreateGnRules(gn_path, root_dir, build_dir)
+  generator.CreateGnRules(gn_path, root_dir, out_dir)
 
 
 def Main(args):
   default_root = os.path.normpath(os.path.join(
       os.path.dirname(__file__), os.pardir, os.pardir, os.pardir))
-
-  print("default_root === " + default_root)
 
   parser = argparse.ArgumentParser(
       description='Generate build directories for use with gn.')
@@ -403,14 +394,17 @@ def Main(args):
       sys.exit(1)
 
   out_dir = os.path.join(args.root, args.build_dir)
+  buildDir = os.path.join(args.root, 'out', 'build')
+
   if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
 
-  print("rootDir === " + args.root)
+  if not os.path.isdir(buildDir):
+    os.makedirs(buildDir)
 
   if not args.no_xcode_project:
-    GenerateXcodeProject(gn_path, args.root, args.proj_name, out_dir, args.build_config, args.target_environment, settings)
-    CreateLLDBInitFile(args.root, out_dir, args.build_config, settings)
+    GenerateXcodeProject(gn_path, args.root, buildDir, args.build_config, args.target_environment, args.proj_name, settings)
+    CreateLLDBInitFile(args.root, buildDir, settings)
   GenerateGnBuildRules(gn_path, args.root, out_dir, args.build_config, args.target_environment, settings)
 
 

@@ -96,7 +96,6 @@ const Config = function () {
   this.defaultGClientFile = path.join(this.rootDir, '.gclient')
   this.gClientFile = process.env.HEROND_GCLIENT_FILE || this.defaultGClientFile
   this.srcDir = path.join(this.rootDir, 'src')
-  this.configFile = 'args.gn'
   this.channel = 'development'
   this.application = 'gn_all'
   this.targetEnvironment = "simulator"
@@ -110,30 +109,6 @@ const Config = function () {
   } else {
     this.realGomaDir = path.join(this.depotToolsDir, '.cipd_bin')
   }
-}
-
-Config.prototype.isReleaseBuild = function () {
-  return this.buildConfig.toLowerCase() === 'release'
-}
-
-Config.prototype.isComponentBuild = function () {
-  return this.buildConfig.toLowerCase() === 'debug' || this.buildConfig.toLowerCase() === 'component'
-}
-
-Config.prototype.isDebug = function () {
-  return this.buildConfig.toLowerCase() === 'debug'
-}
-
-Config.prototype.isOfficialBuild = function () {
-  return this.buildConfig.toLowerCase() === 'official'
-}
-
-Config.prototype.isProfileBuild = function () {
-  return this.buildConfig.toLowerCase() === 'profile'
-}
-
-Config.prototype.getBrandingPathProduct = function () {
-  return this.isOfficialBuild() ? "herond" : "herond-development"
 }
 
 Config.prototype.buildArgs = function () {
@@ -199,7 +174,7 @@ Config.prototype.update = function (options) {
   }
 
   if (options.target_environment) {
-    this.targetEnvironment = options.target_environment
+    this.targetEnvironment = options.target_environment.toLowerCase()
   }
 
   if (options.channel) {
@@ -207,11 +182,28 @@ Config.prototype.update = function (options) {
   }
 
   if (options.application) {
-    this.application = options.application
+    this.application = options.application.toLowerCase()
   }
 
   if (options.xcode_gen) {
     this.xcode_gen_target = options.xcode_gen
+  }
+
+  switch (this.buildConfig.toLowerCase()) {
+    case 'release':
+      this.buildConfig = 'Release'
+      break
+    case 'debug':
+      this.buildConfig = 'Debug'
+      break
+    case 'profile':
+        this.buildConfig = 'Profile'
+        break
+    case 'official':
+      this.buildConfig = 'Official'
+      break
+    default:
+      this.buildConfig = this.defaultBuildConfig
   }
 }
 
@@ -289,19 +281,6 @@ Object.defineProperty(Config.prototype, 'outputDir', {
     else {
       return path.join(baseDir, "Component")
     }
-
-    let buildConfigDir = this.buildConfig
-    if (this.targetArch && this.targetArch != 'x64') {
-      buildConfigDir = buildConfigDir + '_' + this.targetArch
-    }
-    if (this.targetOS && (this.targetOS === 'android' || this.targetOS === 'ios')) {
-      buildConfigDir = this.targetOS + "_" + buildConfigDir
-    }
-    if (this.targetEnvironment) {
-      buildConfigDir = buildConfigDir + "_" + this.targetEnvironment
-    }
-
-    return path.join(baseDir, buildConfigDir)
   },
   set: function (outputDir) { return this.__outputDir = outputDir },
 })

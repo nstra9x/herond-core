@@ -7,9 +7,7 @@ const buildIOS = (buildConfig = config.defaultBuildConfig, options) => {
   config.update(options)
 
   util.generateXcodeWorkspace()
-  util.buildTarget()
-
-  //util.run('autoninja', ['-C', outDir, application], { stdio: 'inherit', cwd: config.srcDir })
+  //util.buildTarget()
 
   console.log("... build project done.")
 }

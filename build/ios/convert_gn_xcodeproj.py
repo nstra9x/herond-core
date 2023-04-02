@@ -56,7 +56,7 @@ class Template(string.Template):
 @functools.lru_cache
 def LoadSchemeTemplate(root, name):
   """Return a string.Template object for scheme file loaded relative to root."""
-  path = os.path.join(root, 'ios', 'build', 'tools', name + '.template')
+  path = os.path.join(root, 'herond', 'build', 'ios', name + '.template')
   with open(path) as file:
     return Template(file.read())
 
@@ -172,7 +172,7 @@ class XcodeProject(object):
       if obj['productType'] in product_types:
         yield (key, obj)
 
-  def UpdateBuildScripts(self):
+  def UpdateBuildScripts(self, output_dir):
     """Update build scripts to respect configuration and platforms."""
     for key, obj in self.IterObjectsByIsa('PBXShellScriptBuildPhase'):
 
@@ -306,7 +306,7 @@ def UpdateXcodeProject(project_dir, old_project_dir, configurations, root_dir):
   json_data = json.loads(LoadXcodeProjectAsJSON(project_dir))
   project = XcodeProject(json_data['objects'])
 
-  project.UpdateBuildScripts()
+  project.UpdateBuildScripts(old_project_dir)
   project.UpdateBuildConfigurations(configurations)
 
   mapping = project.GetHostMappingForXCTests()

@@ -23,7 +23,7 @@ program
 
   program
     .command('build')
-    .option('-C <build_dir>', 'build config (out/Debug, out/Release, out/Official, out/Profile')
+    .option('-C <build_dir>', 'output directory')
     .option('--target_environment <target_environment>', 'target environment (device, catalyst, simulator)')
     .option('--channel <target_channel>', 'target channel to build', /^(beta|dev|nightly|release)$/i)
     .option('--application <target_application>', 'Build with options', /^(gn_all|content_shell|ios_web_shell)$/i)

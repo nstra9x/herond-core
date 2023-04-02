@@ -365,9 +365,9 @@ const util = {
       num_compile_failure = 0
 
     let ninjaOpts = [
-      '-C', options.outputDir || config.outputDir, target,
+      '-C', options.outputDir || config.outputDir,
       '-k', num_compile_failure,
-      ...config.application
+      config.application
     ]
     options.env.AUTONINJA_BUILD_ID = buildId
     util.run('autoninja', ninjaOpts, options)
