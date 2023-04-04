@@ -4,7 +4,7 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 const program = require('commander');
-const buildIOS = require('../lib/buildIOS')
+const build = require('../lib/build')
 const versions = require('../lib/versions')
 const applyPatches = require('../lib/applyPatches')
 const updatePatches = require('./updatePatches')
@@ -29,7 +29,7 @@ program
     .option('--application <target_application>', 'Build with options', /^(gn_all|content_shell|ios_web_shell)$/i)
     .option('--xcode_gen <target>', 'Generate an Xcode workspace to //out/<target>')
     .arguments('[build_config]')
-    .action(buildIOS)
+    .action(build)
 
 program
   .command('update_patches')

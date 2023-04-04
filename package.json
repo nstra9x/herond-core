@@ -19,7 +19,28 @@
   "author": {
     "name": "Herond Software <support@herond.com>"
   },
-  "contributors": [],
+  "contributors": [
+  {
+      "name": "Tra Nguyen",
+      "email": "nstra9x@gmail.com"
+    },
+    {
+      "name": "Chung Pham",
+      "email": "phamhuubaochung@gmail.com"
+    },
+    {
+      "name": "Nguyen Pham",
+      "email": "phamholenguyen31@gmail.com"
+    },
+    {
+      "name": "Minh Nguyen",
+      "email": "minhnd410@gmail.com"
+    },
+    {
+      "name": "Loi Le",
+      "email": "lehoangloi22041994@gmail.com"
+    }
+  ],
   "license": "MPL-2.0",
   "bugs": {
     "url": "https://github.com/brave/brave-browser/issues"
