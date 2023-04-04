@@ -87,12 +87,13 @@ class GnGenerator(object):
     'catalyst': HostCpuArch(),
   }
 
-  def __init__(self, settings, config, target):
+  def __init__(self, settings, buildDir, config, target):
     assert target in SUPPORTED_TARGETS
     assert config in SUPPORTED_CONFIGS
     self._settings = settings
     self._config = config
     self._target = target
+    self._buildDir = buildDir
 
   def _GetGnArgs(self):
     """Build the list of arguments to pass to gn.
@@ -213,8 +214,7 @@ class GnGenerator(object):
       gn_command.append(
           '--xcode-additional-files-roots=' + ';'.join(ADDITIONAL_FILE_ROOTS))
       gn_command.append('--xcode-configs=' + ';'.join(SUPPORTED_CONFIGS))
-      gn_command.append('--xcode-config-build-dir='
-                        '//out/${CONFIGURATION}${EFFECTIVE_PLATFORM_NAME}')
+      gn_command.append('--xcode-config-build-dir=' + self._buildDir)
       if self._settings.has_section('filters'):
         target_filters = self._settings.values('filters')
         if target_filters:
@@ -224,8 +224,6 @@ class GnGenerator(object):
     gn_command.append('gen')
     gn_command.append('//%s' %
         os.path.relpath(os.path.abspath(out_path), os.path.abspath(src_path)))
-    print("gn_command ==== ")
-    print(*gn_command)
     return gn_command
 
 
@@ -261,7 +259,7 @@ def GenerateXcodeProject(gn_path, root_dir, out_dir, build_config, target_enviro
   prefix = os.path.abspath(os.path.join(root_dir, 'out', '_temp'))
   temp_path = tempfile.mkdtemp(prefix=prefix)
   try:
-    generator = GnGenerator(settings, build_config, target_environment)
+    generator = GnGenerator(settings, out_dir, build_config, target_environment)
     generator.Generate(gn_path, proj_name, root_dir, temp_path)
     convert_gn_xcodeproj.ConvertGnXcodeProject(
         root_dir,
@@ -320,7 +318,7 @@ def GenerateGnBuildRules(gn_path, root_dir, out_dir, build_config, target_enviro
   if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
 
-  generator = GnGenerator(settings, build_config, target_environment)
+  generator = GnGenerator(settings, out_dir, build_config, target_environment)
   generator.CreateGnRules(gn_path, root_dir, out_dir)
 
 
@@ -394,17 +392,13 @@ def Main(args):
       sys.exit(1)
 
   out_dir = os.path.join(args.root, args.build_dir)
-  buildDir = os.path.join(args.root, 'out', 'build')
 
   if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
 
-  if not os.path.isdir(buildDir):
-    os.makedirs(buildDir)
-
   if not args.no_xcode_project:
-    GenerateXcodeProject(gn_path, args.root, buildDir, args.build_config, args.target_environment, args.proj_name, settings)
-    CreateLLDBInitFile(args.root, buildDir, settings)
+    GenerateXcodeProject(gn_path, args.root, out_dir, args.build_config, args.target_environment, args.proj_name, settings)
+    CreateLLDBInitFile(args.root, out_dir, settings)
   GenerateGnBuildRules(gn_path, args.root, out_dir, args.build_config, args.target_environment, settings)
 
 

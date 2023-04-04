@@ -7,7 +7,7 @@ const buildIOS = (buildConfig = config.defaultBuildConfig, options) => {
   config.update(options)
 
   util.generateXcodeWorkspace()
-  //util.buildTarget()
+  util.buildTarget()
 
   console.log("... build project done.")
 }

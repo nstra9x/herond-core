@@ -172,7 +172,7 @@ class XcodeProject(object):
       if obj['productType'] in product_types:
         yield (key, obj)
 
-  def UpdateBuildScripts(self, output_dir):
+  def UpdateBuildScripts(self):
     """Update build scripts to respect configuration and platforms."""
     for key, obj in self.IterObjectsByIsa('PBXShellScriptBuildPhase'):
 
@@ -181,12 +181,11 @@ class XcodeProject(object):
       if shell_path.endswith('/sh'):
         shell_code = shell_code.replace(
             'ninja -C .',
-            'ninja -C "../${CONFIGURATION}${EFFECTIVE_PLATFORM_NAME}"')
+            'ninja -C "${PROJECT_DIR}"')
       elif PYTHON_RE.search(shell_path):
         shell_code = shell_code.replace(
             '''ninja_params = [ '-C', '.' ]''',
-            '''ninja_params = [ '-C', '../' + os.environ['CONFIGURATION']'''
-            ''' + os.environ['EFFECTIVE_PLATFORM_NAME'] ]''')
+            '''ninja_params = [ '-C', os.environ['PROJECT_DIR']''')
 
       # Replace the build script in the object.
       obj['shellScript'] = shell_code
@@ -204,8 +203,7 @@ class XcodeProject(object):
       # Use the first build configuration as template for creating all the
       # new build configurations.
       build_config_template = self.objects[obj['buildConfigurations'][0]]
-      build_config_template['buildSettings']['CONFIGURATION_BUILD_DIR'] = \
-          '$(PROJECT_DIR)/../$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)'
+      build_config_template['buildSettings']['CONFIGURATION_BUILD_DIR'] = '$(PROJECT_DIR)'
 
       # Remove the existing build configurations from the project before
       # creating the new ones.
@@ -306,7 +304,7 @@ def UpdateXcodeProject(project_dir, old_project_dir, configurations, root_dir):
   json_data = json.loads(LoadXcodeProjectAsJSON(project_dir))
   project = XcodeProject(json_data['objects'])
 
-  project.UpdateBuildScripts(old_project_dir)
+  project.UpdateBuildScripts()
   project.UpdateBuildConfigurations(configurations)
 
   mapping = project.GetHostMappingForXCTests()
