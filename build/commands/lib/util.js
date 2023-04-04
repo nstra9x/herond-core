@@ -366,7 +366,6 @@ const util = {
 
     let ninjaOpts = [
       '-C', options.outputDir || config.outputDir,
-      '-k', num_compile_failure,
       config.application
     ]
     options.env.AUTONINJA_BUILD_ID = buildId
